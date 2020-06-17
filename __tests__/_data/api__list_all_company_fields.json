@@ -1,0 +1,112 @@
+[
+  {
+    "id": 1,
+    "name": "name",
+    "label": "Company name",
+    "field_type": "default_name",
+    "required_for_agent": true,
+    "position": 1,
+    "default": true,
+    "created_at": "2014-12-12T12:29:46Z",
+    "updated_at": "2014-12-12T12:29:46Z"
+  },
+  {
+    "id": 2,
+    "name": "description",
+    "label": "Description",
+    "field_type": "default_description",
+    "required_for_agent": false,
+    "position": 2,
+    "default": true,
+    "created_at": "2014-12-12T12:29:46Z",
+    "updated_at": "2014-12-12T12:29:46Z"
+  },
+  {
+    "id": 3,
+    "name": "note",
+    "label": "Notes",
+    "field_type": "default_note",
+    "required_for_agent": false,
+    "position": 3,
+    "default": true,
+    "created_at": "2014-12-12T12:29:46Z",
+    "updated_at": "2014-12-12T12:29:46Z"
+  },
+  {
+    "id": 4,
+    "name": "domains",
+    "label": "Domain Names for this company",
+    "field_type": "default_domains",
+    "required_for_agent": false,
+    "position": 4,
+    "default": true,
+    "created_at": "2014-12-12T12:29:46Z",
+    "updated_at": "2014-12-12T12:29:46Z"
+  },
+  {
+    "id": 5,
+    "name": "health_score",
+    "label": "Health score",
+    "field_type": "default_health_score",
+    "required_for_agent": false,
+    "position": 5,
+    "default": true,
+    "created_at": "2014-12-12T12:29:46Z",
+    "updated_at": "2014-12-12T12:29:46Z"
+  },
+  {
+    "id": 6,
+    "name": "account_tier",
+    "label": "Account tier",
+    "field_type": "default_account_tier",
+    "required_for_agent": false,
+    "position": 6,
+    "default": true,
+    "created_at": "2014-12-12T12:29:46Z",
+    "updated_at": "2014-12-12T12:29:46Z"
+  },
+  {
+    "id": 7,
+    "name": "renewal_date",
+    "label": "Renewal date",
+    "field_type": "default_renewal_date",
+    "required_for_agent": false,
+    "position": 7,
+    "default": true,
+    "created_at": "2014-12-12T12:29:46Z",
+    "updated_at": "2014-12-12T12:29:46Z"
+  },
+  {
+    "id": 8,
+    "name": "industry",
+    "label": "Industry",
+    "field_type": "default_industry",
+    "required_for_agent": false,
+    "position": 8,
+    "default": true,
+    "created_at": "2014-12-12T12:29:46Z",
+    "updated_at": "2014-12-12T12:29:46Z"
+  },
+  {
+    "id": 9,
+    "name": "website",
+    "label": "Website",
+    "position": 9,
+    "required_for_agent": false,
+    "type": "custom_url",
+    "default": false,
+    "created_at": "2016-01-09T06:52:41Z",
+    "updated_at": "2016-01-09T06:52:41Z"
+  },
+  {
+    "id": 10,
+    "name": "address",
+    "label": "Address",
+    "position": 10,
+    "required_for_agent": false,
+    "type": "custom_paragraph",
+    "default": false,
+    "created_at": "2016-01-09T06:52:41Z",
+    "updated_at": "2016-01-09T06:52:41Z"
+  }
+]
