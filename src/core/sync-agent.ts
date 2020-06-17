@@ -7,15 +7,15 @@ import { ConnectorStatusResponse } from "../types/connector-status";
 import IHullAccountUpdateMessage from "../types/account-update-message";
 
 export class SyncAgent {
-  private hullClient: IHullClient;
+  readonly hullClient: IHullClient;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private metricsClient: any;
+  readonly metricsClient: any;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private hullConnector: any;
+  readonly hullConnector: any;
 
-  private diContainer: AwilixContainer;
+  readonly diContainer: AwilixContainer;
 
-  private privateSettings: PrivateSettings;
+  readonly privateSettings: PrivateSettings;
 
   constructor(
     client: IHullClient,
