@@ -1,0 +1,172 @@
+{
+  "name": "Freshdesk [BETA]",
+  "tags": [
+    "outgoing",
+    "oneColumn",
+    "batch",
+    "batch-accounts",
+    "smart-notifier"
+  ],
+  "description": "Synchronize Contacts and Accounts with Freshdesk and Fetch Tickets",
+  "readme": "readme.md",
+  "tabs": [],
+  "version": "0.1.0",
+  "source": "freshdesk",
+  "logo": "logo.png",
+  "ui": false,
+  "settings": [],
+  "private_settings": [
+    {
+      "name": "api_key",
+      "type": "string",
+      "title": "API Key",
+      "description": "For details how to find your API Key, please refer to this [solution article](https://support.freshdesk.com/support/solutions/articles/215517) from Freshdesk."
+    },
+    {
+      "name": "contact_synchronized_segments",
+      "title": "User Filter",
+      "description": "Synchronize Hull Users to Freshdesk Contacts when they are part of one of these segments.",
+      "type": "array",
+      "format": "segment",
+      "default": []
+    },
+    {
+      "name": "contact_lookup_attribute_email",
+      "title": "Email Lookup",
+      "description": "Define which attribute on the Hull User Profile shall be used to lookup Contacts in Freshdesk by their email.",
+      "type": "string",
+      "format": "trait",
+      "default": "email"
+    },
+    {
+      "name": "contact_lookup_attribute_unique_external_id",
+      "title": "Unique External ID Lookup",
+      "description": "Define which attribute on the Hull User Profile shall be used to lookup Contacts in Freshdesk by their unique external id.",
+      "type": "string",
+      "format": "trait",
+      "default": "external_id"
+    },
+    {
+      "name": "contact_attributes_outbound",
+      "title": "Outgoing Attributes",
+      "description": "Map the attributes of Hull Users to send.",
+      "type": "array",
+      "format": "traitMapping",
+      "options": {
+        "direction": "outgoing",
+        "showOverwriteToggle": false,
+        "placeholder": "Freshdesk Field",
+        "allowCreate": false,
+        "loadOptions": "/meta/fields/contact"
+      }
+    },
+    {
+      "name": "contact_attributes_inbound",
+      "title": "Incoming Fields",
+      "description": "Map the fields of Freshdesk Contacts to fetch.",
+      "type": "array",
+      "format": "traitMapping",
+      "options": {
+        "direction": "incoming",
+        "showOverwriteToggle": false,
+        "placeholder": "Freshdesk Field",
+        "allowCreate": true,
+        "loadOptions": "/meta/fields/contact",
+        "source": "freshdesk"
+      }
+    },
+    {
+      "name": "account_synchronized_segments",
+      "title": "Account Filter",
+      "description": "Synchronize Hull Accounts to Freshdesk Companies when they are part of one of these segments.",
+      "type": "array",
+      "format": "accountSegment",
+      "default": []
+    },
+    {
+      "name": "account_lookup_attribute_domain",
+      "title": "Domain Lookup",
+      "description": "Define which attribute on the Hull Account Profile shall be used to lookup Companies in Freshdesk by their domain.",
+      "type": "string",
+      "format": "accountTrait",
+      "default": "domain"
+    },
+    {
+      "name": "account_attributes_outbound",
+      "title": "Outgoing Attributes",
+      "description": "Map the attributes of Hull Accounts to send.",
+      "type": "array",
+      "format": "accountTraitMapping",
+      "options": {
+        "direction": "outgoing",
+        "showOverwriteToggle": false,
+        "placeholder": "Freshdesk Field",
+        "allowCreate": false,
+        "loadOptions": "/meta/fields/company"
+      }
+    },
+    {
+      "name": "account_filter_inbound_require_domain",
+      "title": "Require Domain for Incoming",
+      "description": "Skip Companies when importing data that do not have a domain in Freshdesk",
+      "type": "boolean",
+      "default": false
+    },
+    {
+      "name": "account_attributes_inbound",
+      "title": "Incoming Fields",
+      "description": "Map the fields of Freshdesk Companies to fetch.",
+      "type": "array",
+      "format": "accountTraitMapping",
+      "options": {
+        "direction": "incoming",
+        "showOverwriteToggle": false,
+        "placeholder": "Freshdesk Field",
+        "allowCreate": true,
+        "loadOptions": "/meta/fields/company",
+        "source": "freshdesk"
+      }
+    }
+  ],
+  "schedules": [
+    {
+      "url": "/status",
+      "type": "interval",
+      "value": "30"
+    }
+  ],
+  "subscriptions": [
+    {
+      "url": "/smart-notifier"
+    }
+  ],
+  "settings_sections": [
+    {
+      "title": "Freshdesk Credentials",
+      "description": "Authorize the Connector to access the Freshdesk API on your behalf using your personal access token.",
+      "properties": ["private_settings.api_key"]
+    },
+    {
+      "title": "Contacts",
+      "description": "Define how to synchronize Hull Users with Freshdesk Contacts.",
+      "properties": [
+        "private_settings.contact_synchronized_segments",
+        "private_settings.contact_lookup_attribute_email",
+        "private_settings.contact_lookup_attribute_unique_external_id",
+        "private_settings.contact_attributes_outbound",
+        "private_settings.contact_attributes_inbound"
+      ]
+    },
+    {
+      "title": "Companies",
+      "description": "Define how to synchronize Hull Accounts with Freshdesk Companies.",
+      "properties": [
+        "private_settings.account_synchronized_segments",
+        "private_settings.account_lookup_attribute_domain",
+        "private_settings.account_attributes_outbound",
+        "private_settings.account_filter_inbound_require_domain",
+        "private_settings.account_attributes_inbound"
+      ]
+    }
+  ]
+}
