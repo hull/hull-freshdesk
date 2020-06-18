@@ -1,0 +1,13 @@
+{
+  "id": 8,
+  "name": "SuperNova",
+  "description": "Spaceship Manufacturing Company",
+  "domains": ["supernova", "nova"],
+  "note": null,
+  "created_at": "2014-01-08T09:08:53+05:30",
+  "updated_at": "2014-01-08T09:08:53+05:30",
+  "health_score": "Happy",
+  "account_tier": "Premium",
+  "renewal_date": "2020-12-31T00:00:00Z",
+  "industry": null
+}

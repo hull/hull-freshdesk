@@ -8,11 +8,17 @@ import {
   FreshdeskContactCreateUpdate,
   FreshdeskContact,
   FreshdeskFilterResult,
+  FreshdeskCompanyCreateOrUpdate,
+  FreshdeskCompany,
 } from "../../src/core/service-objects";
 import { API_BASE_URL, API_KEY } from "../_helpers/constants";
 import ApiResponseListAllCompanyFields from "../_data/api__list_all_company_fields.json";
 import ApiResponseCreateContact from "../_data/api__create_contact.json";
+import ApiResponseUpdateContact from "../_data/api__update_contact.json";
 import ApiResponseFilterContacts from "../_data/api__filter_contacts.json";
+import ApiResponseCreateCompany from "../_data/api__create_company.json";
+import ApiResponseUpdateCompany from "../_data/api__update_company.json";
+import ApiResponseFilterCompanies from "../_data/api__filter_companies.json";
 
 describe("ServiceClient", () => {
   beforeEach(() => {
@@ -200,7 +206,7 @@ describe("ServiceClient", () => {
       nock(API_BASE_URL)
         .put("/api/v2/contacts/432")
         .matchHeader("authorization", `Bearer ${API_KEY}`)
-        .reply(200, ApiResponseCreateContact, {
+        .reply(200, ApiResponseUpdateContact, {
           "Content-Type": "application/json",
         });
 
@@ -216,7 +222,7 @@ describe("ServiceClient", () => {
         FreshdeskContactCreateUpdate,
         FreshdeskContact | undefined
       > = {
-        data: ApiResponseCreateContact,
+        data: ApiResponseUpdateContact,
         endpoint: `${API_BASE_URL}/api/v2/contacts/432`,
         method: "update",
         record: payload,
@@ -257,7 +263,7 @@ describe("ServiceClient", () => {
   });
 
   describe("filterContacts()", () => {
-    it("should list all contact fields on success", async () => {
+    it("should list all contacts on success", async () => {
       nock(API_BASE_URL)
         .get(`/api/v2/search/contacts?query="active:true"`)
         .matchHeader("authorization", `Bearer ${API_KEY}`)
@@ -297,6 +303,189 @@ describe("ServiceClient", () => {
       > = {
         data: undefined,
         endpoint: `${API_BASE_URL}/api/v2/search/contacts?query="active:true"`,
+        method: "query",
+        record: undefined,
+        success: false,
+        error: ["Some arbitrary error"],
+      };
+
+      expect(actual).toEqual(expected);
+    });
+  });
+
+  describe("createCompany()", () => {
+    it("should create a company on success", async () => {
+      nock(API_BASE_URL)
+        .post("/api/v2/companies")
+        .matchHeader("authorization", `Bearer ${API_KEY}`)
+        .reply(200, ApiResponseCreateCompany, {
+          "Content-Type": "application/json",
+        });
+
+      const payload = {
+        name: "SuperNova",
+        domains: ["supernova", "nova"],
+        description: "Spaceship Manufacturing Company",
+        health_score: "Happy",
+        account_tier: "Premium",
+        renewal_date: "2020-12-31",
+      };
+
+      const client = new ServiceClient({ apiKey: API_KEY });
+      const actual = await client.createCompany(payload);
+      const expected: ApiResultObject<
+        FreshdeskCompanyCreateOrUpdate,
+        FreshdeskCompany | undefined
+      > = {
+        data: ApiResponseCreateCompany,
+        endpoint: `${API_BASE_URL}/api/v2/companies`,
+        method: "insert",
+        record: payload,
+        success: true,
+      };
+
+      expect(actual).toEqual(expected);
+    });
+
+    it("should return an error result and not throw if API responds with status 500", async () => {
+      nock(API_BASE_URL)
+        .post("/api/v2/companies")
+        .matchHeader("authorization", `Bearer ${API_KEY}`)
+        .replyWithError("Some arbitrary error");
+
+      const payload = {
+        name: "SuperNova",
+        domains: ["supernova", "nova"],
+        description: "Spaceship Manufacturing Company",
+        health_score: "Happy",
+        account_tier: "Premium",
+        renewal_date: "2020-12-31",
+      };
+
+      const client = new ServiceClient({ apiKey: API_KEY });
+      const actual = await client.createCompany(payload);
+      const expected: ApiResultObject<
+        FreshdeskCompanyCreateOrUpdate,
+        FreshdeskCompany | undefined
+      > = {
+        data: undefined,
+        endpoint: `${API_BASE_URL}/api/v2/companies`,
+        method: "insert",
+        record: payload,
+        success: false,
+        error: ["Some arbitrary error"],
+      };
+
+      expect(actual).toEqual(expected);
+    });
+  });
+
+  describe("updateCompany()", () => {
+    it("should update a company on success", async () => {
+      nock(API_BASE_URL)
+        .put("/api/v2/companies/8")
+        .matchHeader("authorization", `Bearer ${API_KEY}`)
+        .reply(200, ApiResponseUpdateCompany, {
+          "Content-Type": "application/json",
+        });
+
+      const payload = {
+        name: "Super Nova",
+        domains: ["supernova", "nova", "super"],
+        description: "Space Shuttle Manufacturing",
+        account_tier: "Enterprise",
+        industry: "Aerospace and Defense",
+      };
+
+      const client = new ServiceClient({ apiKey: API_KEY });
+      const actual = await client.updateCompany(8, payload);
+      const expected: ApiResultObject<
+        FreshdeskCompanyCreateOrUpdate,
+        FreshdeskCompany | undefined
+      > = {
+        data: ApiResponseUpdateCompany,
+        endpoint: `${API_BASE_URL}/api/v2/companies/8`,
+        method: "update",
+        record: payload,
+        success: true,
+      };
+
+      expect(actual).toEqual(expected);
+    });
+
+    it("should return an error result and not throw if API responds with status 500", async () => {
+      nock(API_BASE_URL)
+        .put("/api/v2/companies/8")
+        .matchHeader("authorization", `Bearer ${API_KEY}`)
+        .replyWithError("Some arbitrary error");
+
+      const payload = {
+        name: "Super Nova",
+        domains: ["supernova", "nova", "super"],
+        description: "Space Shuttle Manufacturing",
+        account_tier: "Enterprise",
+        industry: "Aerospace and Defense",
+      };
+
+      const client = new ServiceClient({ apiKey: API_KEY });
+      const actual = await client.updateCompany(8, payload);
+      const expected: ApiResultObject<
+        FreshdeskCompanyCreateOrUpdate,
+        FreshdeskCompany | undefined
+      > = {
+        data: undefined,
+        endpoint: `${API_BASE_URL}/api/v2/companies/8`,
+        method: "update",
+        record: payload,
+        success: false,
+        error: ["Some arbitrary error"],
+      };
+
+      expect(actual).toEqual(expected);
+    });
+  });
+
+  describe("filterCompanies()", () => {
+    it("should list all companies on success", async () => {
+      nock(API_BASE_URL)
+        .get(`/api/v2/search/companies?query="domain:'lexcorp.org'"`)
+        .matchHeader("authorization", `Bearer ${API_KEY}`)
+        .reply(200, ApiResponseFilterCompanies, {
+          "Content-Type": "application/json",
+        });
+
+      const q = "domain:'lexcorp.org'";
+      const client = new ServiceClient({ apiKey: API_KEY });
+      const actual = await client.filterCompanies(q);
+      const expected: ApiResultObject<
+        unknown,
+        FreshdeskFilterResult<FreshdeskCompany> | undefined
+      > = {
+        data: ApiResponseFilterCompanies,
+        endpoint: `${API_BASE_URL}/api/v2/search/companies?query="domain:'lexcorp.org'"`,
+        method: "query",
+        record: undefined,
+        success: true,
+      };
+
+      expect(actual).toEqual(expected);
+    });
+
+    it("should return an error result and not throw if API responds with status 500", async () => {
+      nock(API_BASE_URL)
+        .get(`/api/v2/search/companies?query="domain:'lexcorp.org'"`)
+        .matchHeader("authorization", `Bearer ${API_KEY}`)
+        .replyWithError("Some arbitrary error");
+
+      const q = "domain:'lexcorp.org'";
+      const client = new ServiceClient({ apiKey: API_KEY });
+      const actual = await client.filterCompanies(q);
+      const expected: ApiResultObject<
+        unknown,
+        FreshdeskFilterResult<FreshdeskCompany> | undefined
+      > = {
+        data: undefined,
+        endpoint: `${API_BASE_URL}/api/v2/search/companies?query="domain:'lexcorp.org'"`,
         method: "query",
         record: undefined,
         success: false,

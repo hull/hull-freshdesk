@@ -72,3 +72,21 @@ export interface FreshdeskFilterResult<T> {
   total: number;
   results: T[];
 }
+
+export interface FreshdeskCompanyCreateOrUpdate {
+  custom_fields?: FreshdeskCustomFields | null;
+  description?: string | null;
+  domains?: string[] | null;
+  name: string;
+  note?: string | null;
+  health_score?: string | null;
+  account_tier?: string | null;
+  renewal_date?: string | null;
+  industry?: string | null;
+}
+
+export interface FreshdeskCompany extends FreshdeskCompanyCreateOrUpdate {
+  id: number;
+  created_at: string;
+  updated_at: string;
+}

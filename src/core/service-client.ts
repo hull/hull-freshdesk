@@ -7,6 +7,8 @@ import {
   FreshdeskContactCreateUpdate,
   FreshdeskContact,
   FreshdeskFilterResult,
+  FreshdeskCompanyCreateOrUpdate,
+  FreshdeskCompany,
 } from "./service-objects";
 
 export class ServiceClient {
@@ -124,6 +126,84 @@ export class ServiceClient {
     try {
       const axiosResponse = await axios.get<
         FreshdeskFilterResult<FreshdeskContact>
+      >(url, axiosConfig);
+      return ApiUtil.handleApiResultSuccess(
+        url,
+        method,
+        undefined,
+        axiosResponse,
+      );
+    } catch (error) {
+      return ApiUtil.handleApiResultError(url, method, undefined, error);
+    }
+  }
+
+  public async createCompany(
+    data: FreshdeskCompanyCreateOrUpdate,
+  ): Promise<
+    ApiResultObject<
+      FreshdeskCompanyCreateOrUpdate,
+      FreshdeskCompany | undefined
+    >
+  > {
+    const url = `${this.apiBaseUrl}/api/v2/companies`;
+    const method: ApiMethod = "insert";
+    const axiosConfig = this.getAxiosConfig();
+
+    try {
+      const axiosResponse = await axios.post<FreshdeskCompany>(
+        url,
+        data,
+        axiosConfig,
+      );
+      return ApiUtil.handleApiResultSuccess(url, method, data, axiosResponse);
+    } catch (error) {
+      return ApiUtil.handleApiResultError(url, method, data, error);
+    }
+  }
+
+  public async updateCompany(
+    id: number,
+    data: FreshdeskCompanyCreateOrUpdate,
+  ): Promise<
+    ApiResultObject<
+      FreshdeskCompanyCreateOrUpdate,
+      FreshdeskCompany | undefined
+    >
+  > {
+    const url = `${this.apiBaseUrl}/api/v2/companies/${id}`;
+    const method: ApiMethod = "update";
+    const axiosConfig = this.getAxiosConfig();
+
+    try {
+      const axiosResponse = await axios.put<FreshdeskCompany>(
+        url,
+        data,
+        axiosConfig,
+      );
+      return ApiUtil.handleApiResultSuccess(url, method, data, axiosResponse);
+    } catch (error) {
+      return ApiUtil.handleApiResultError(url, method, data, error);
+    }
+  }
+
+  public async filterCompanies(
+    query: string,
+  ): Promise<
+    ApiResultObject<
+      undefined,
+      FreshdeskFilterResult<FreshdeskCompany> | undefined
+    >
+  > {
+    const url = `${this.apiBaseUrl}/api/v2/search/companies?query="${encodeURI(
+      query,
+    )}"`;
+    const method: ApiMethod = "query";
+    const axiosConfig = this.getAxiosConfig();
+
+    try {
+      const axiosResponse = await axios.get<
+        FreshdeskFilterResult<FreshdeskCompany>
       >(url, axiosConfig);
       return ApiUtil.handleApiResultSuccess(
         url,
