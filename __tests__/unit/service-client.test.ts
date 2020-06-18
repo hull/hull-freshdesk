@@ -11,7 +11,7 @@ import {
   FreshdeskCompanyCreateOrUpdate,
   FreshdeskCompany,
 } from "../../src/core/service-objects";
-import { API_BASE_URL, API_KEY } from "../_helpers/constants";
+import { API_BASE_URL, API_KEY, API_DOMAIN } from "../_helpers/constants";
 import ApiResponseListAllCompanyFields from "../_data/api__list_all_company_fields.json";
 import ApiResponseCreateContact from "../_data/api__create_contact.json";
 import ApiResponseUpdateContact from "../_data/api__update_contact.json";
@@ -36,9 +36,14 @@ describe("ServiceClient", () => {
   });
 
   describe("constructor()", () => {
-    it("should initialize the API Key", () => {
-      const client = new ServiceClient({ apiKey: API_KEY });
+    it("should initialize the API Key and domain", () => {
+      const client = new ServiceClient({
+        apiKey: API_KEY,
+        domain: API_DOMAIN,
+        logger: console,
+      });
       expect(client.apiKey).toEqual(API_KEY);
+      expect(client.apiBaseUrl).toEqual(`https://${API_DOMAIN}.freshdesk.com`);
     });
   });
 
@@ -46,12 +51,19 @@ describe("ServiceClient", () => {
     it("should list all contact fields on success", async () => {
       nock(API_BASE_URL)
         .get("/api/v2/contact_fields")
-        .matchHeader("authorization", `Bearer ${API_KEY}`)
+        .matchHeader(
+          "authorization",
+          `Basic ${Buffer.from(`${API_KEY}:X`, "utf-8").toString("base64")}`,
+        )
         .reply(200, ApiResponseListAllContactFields, {
           "Content-Type": "application/json",
         });
 
-      const client = new ServiceClient({ apiKey: API_KEY });
+      const client = new ServiceClient({
+        apiKey: API_KEY,
+        domain: API_DOMAIN,
+        logger: console,
+      });
       const actual = await client.listContactFields();
       const expected: ApiResultObject<
         unknown,
@@ -68,12 +80,20 @@ describe("ServiceClient", () => {
     });
 
     it("should return an error result and not throw if API responds with status 500", async () => {
+      console.log;
       nock(API_BASE_URL)
         .get("/api/v2/contact_fields")
-        .matchHeader("authorization", `Bearer ${API_KEY}`)
+        .matchHeader(
+          "authorization",
+          `Basic ${Buffer.from(`${API_KEY}:X`, "utf-8").toString("base64")}`,
+        )
         .replyWithError("Some arbitrary error");
 
-      const client = new ServiceClient({ apiKey: API_KEY });
+      const client = new ServiceClient({
+        apiKey: API_KEY,
+        domain: API_DOMAIN,
+        logger: console,
+      });
       const actual = await client.listContactFields();
       const expected: ApiResultObject<
         unknown,
@@ -95,12 +115,19 @@ describe("ServiceClient", () => {
     it("should list all company fields on success", async () => {
       nock(API_BASE_URL)
         .get("/api/v2/company_fields")
-        .matchHeader("authorization", `Bearer ${API_KEY}`)
+        .matchHeader(
+          "authorization",
+          `Basic ${Buffer.from(`${API_KEY}:X`, "utf-8").toString("base64")}`,
+        )
         .reply(200, ApiResponseListAllCompanyFields, {
           "Content-Type": "application/json",
         });
 
-      const client = new ServiceClient({ apiKey: API_KEY });
+      const client = new ServiceClient({
+        apiKey: API_KEY,
+        domain: API_DOMAIN,
+        logger: console,
+      });
       const actual = await client.listCompanyFields();
       const expected: ApiResultObject<
         unknown,
@@ -119,10 +146,17 @@ describe("ServiceClient", () => {
     it("should return an error result and not throw if API responds with status 500", async () => {
       nock(API_BASE_URL)
         .get("/api/v2/company_fields")
-        .matchHeader("authorization", `Bearer ${API_KEY}`)
+        .matchHeader(
+          "authorization",
+          `Basic ${Buffer.from(`${API_KEY}:X`, "utf-8").toString("base64")}`,
+        )
         .replyWithError("Some arbitrary error");
 
-      const client = new ServiceClient({ apiKey: API_KEY });
+      const client = new ServiceClient({
+        apiKey: API_KEY,
+        domain: API_DOMAIN,
+        logger: console,
+      });
       const actual = await client.listCompanyFields();
       const expected: ApiResultObject<
         unknown,
@@ -144,7 +178,10 @@ describe("ServiceClient", () => {
     it("should create a contact on success", async () => {
       nock(API_BASE_URL)
         .post("/api/v2/contacts")
-        .matchHeader("authorization", `Bearer ${API_KEY}`)
+        .matchHeader(
+          "authorization",
+          `Basic ${Buffer.from(`${API_KEY}:X`, "utf-8").toString("base64")}`,
+        )
         .reply(200, ApiResponseCreateContact, {
           "Content-Type": "application/json",
         });
@@ -155,7 +192,11 @@ describe("ServiceClient", () => {
         other_emails: ["lex@freshdesk.com", "louis@freshdesk.com"],
       };
 
-      const client = new ServiceClient({ apiKey: API_KEY });
+      const client = new ServiceClient({
+        apiKey: API_KEY,
+        domain: API_DOMAIN,
+        logger: console,
+      });
       const actual = await client.createContact(payload);
       const expected: ApiResultObject<
         FreshdeskContactCreateUpdate,
@@ -174,7 +215,10 @@ describe("ServiceClient", () => {
     it("should return an error result and not throw if API responds with status 500", async () => {
       nock(API_BASE_URL)
         .post("/api/v2/contacts")
-        .matchHeader("authorization", `Bearer ${API_KEY}`)
+        .matchHeader(
+          "authorization",
+          `Basic ${Buffer.from(`${API_KEY}:X`, "utf-8").toString("base64")}`,
+        )
         .replyWithError("Some arbitrary error");
 
       const payload = {
@@ -183,7 +227,11 @@ describe("ServiceClient", () => {
         other_emails: ["lex@freshdesk.com", "louis@freshdesk.com"],
       };
 
-      const client = new ServiceClient({ apiKey: API_KEY });
+      const client = new ServiceClient({
+        apiKey: API_KEY,
+        domain: API_DOMAIN,
+        logger: console,
+      });
       const actual = await client.createContact(payload);
       const expected: ApiResultObject<
         FreshdeskContactCreateUpdate,
@@ -205,7 +253,10 @@ describe("ServiceClient", () => {
     it("should update a contact on success", async () => {
       nock(API_BASE_URL)
         .put("/api/v2/contacts/432")
-        .matchHeader("authorization", `Bearer ${API_KEY}`)
+        .matchHeader(
+          "authorization",
+          `Basic ${Buffer.from(`${API_KEY}:X`, "utf-8").toString("base64")}`,
+        )
         .reply(200, ApiResponseUpdateContact, {
           "Content-Type": "application/json",
         });
@@ -216,7 +267,11 @@ describe("ServiceClient", () => {
         other_emails: ["louis@freshdesk.com", "jonathan.kent@freshdesk.com"],
       };
 
-      const client = new ServiceClient({ apiKey: API_KEY });
+      const client = new ServiceClient({
+        apiKey: API_KEY,
+        domain: API_DOMAIN,
+        logger: console,
+      });
       const actual = await client.updateContact(432, payload);
       const expected: ApiResultObject<
         FreshdeskContactCreateUpdate,
@@ -235,7 +290,10 @@ describe("ServiceClient", () => {
     it("should return an error result and not throw if API responds with status 500", async () => {
       nock(API_BASE_URL)
         .put("/api/v2/contacts/432")
-        .matchHeader("authorization", `Bearer ${API_KEY}`)
+        .matchHeader(
+          "authorization",
+          `Basic ${Buffer.from(`${API_KEY}:X`, "utf-8").toString("base64")}`,
+        )
         .replyWithError("Some arbitrary error");
 
       const payload = {
@@ -244,7 +302,11 @@ describe("ServiceClient", () => {
         other_emails: ["louis@freshdesk.com", "jonathan.kent@freshdesk.com"],
       };
 
-      const client = new ServiceClient({ apiKey: API_KEY });
+      const client = new ServiceClient({
+        apiKey: API_KEY,
+        domain: API_DOMAIN,
+        logger: console,
+      });
       const actual = await client.updateContact(432, payload);
       const expected: ApiResultObject<
         FreshdeskContactCreateUpdate,
@@ -266,13 +328,20 @@ describe("ServiceClient", () => {
     it("should list all contacts on success", async () => {
       nock(API_BASE_URL)
         .get(`/api/v2/search/contacts?query="active:true"`)
-        .matchHeader("authorization", `Bearer ${API_KEY}`)
+        .matchHeader(
+          "authorization",
+          `Basic ${Buffer.from(`${API_KEY}:X`, "utf-8").toString("base64")}`,
+        )
         .reply(200, ApiResponseFilterContacts, {
           "Content-Type": "application/json",
         });
 
       const q = "active:true";
-      const client = new ServiceClient({ apiKey: API_KEY });
+      const client = new ServiceClient({
+        apiKey: API_KEY,
+        domain: API_DOMAIN,
+        logger: console,
+      });
       const actual = await client.filterContacts(q);
       const expected: ApiResultObject<
         unknown,
@@ -291,11 +360,18 @@ describe("ServiceClient", () => {
     it("should return an error result and not throw if API responds with status 500", async () => {
       nock(API_BASE_URL)
         .get(`/api/v2/search/contacts?query="active:true"`)
-        .matchHeader("authorization", `Bearer ${API_KEY}`)
+        .matchHeader(
+          "authorization",
+          `Basic ${Buffer.from(`${API_KEY}:X`, "utf-8").toString("base64")}`,
+        )
         .replyWithError("Some arbitrary error");
 
       const q = "active:true";
-      const client = new ServiceClient({ apiKey: API_KEY });
+      const client = new ServiceClient({
+        apiKey: API_KEY,
+        domain: API_DOMAIN,
+        logger: console,
+      });
       const actual = await client.filterContacts(q);
       const expected: ApiResultObject<
         unknown,
@@ -317,7 +393,10 @@ describe("ServiceClient", () => {
     it("should create a company on success", async () => {
       nock(API_BASE_URL)
         .post("/api/v2/companies")
-        .matchHeader("authorization", `Bearer ${API_KEY}`)
+        .matchHeader(
+          "authorization",
+          `Basic ${Buffer.from(`${API_KEY}:X`, "utf-8").toString("base64")}`,
+        )
         .reply(200, ApiResponseCreateCompany, {
           "Content-Type": "application/json",
         });
@@ -331,7 +410,11 @@ describe("ServiceClient", () => {
         renewal_date: "2020-12-31",
       };
 
-      const client = new ServiceClient({ apiKey: API_KEY });
+      const client = new ServiceClient({
+        apiKey: API_KEY,
+        domain: API_DOMAIN,
+        logger: console,
+      });
       const actual = await client.createCompany(payload);
       const expected: ApiResultObject<
         FreshdeskCompanyCreateOrUpdate,
@@ -350,7 +433,10 @@ describe("ServiceClient", () => {
     it("should return an error result and not throw if API responds with status 500", async () => {
       nock(API_BASE_URL)
         .post("/api/v2/companies")
-        .matchHeader("authorization", `Bearer ${API_KEY}`)
+        .matchHeader(
+          "authorization",
+          `Basic ${Buffer.from(`${API_KEY}:X`, "utf-8").toString("base64")}`,
+        )
         .replyWithError("Some arbitrary error");
 
       const payload = {
@@ -362,7 +448,11 @@ describe("ServiceClient", () => {
         renewal_date: "2020-12-31",
       };
 
-      const client = new ServiceClient({ apiKey: API_KEY });
+      const client = new ServiceClient({
+        apiKey: API_KEY,
+        domain: API_DOMAIN,
+        logger: console,
+      });
       const actual = await client.createCompany(payload);
       const expected: ApiResultObject<
         FreshdeskCompanyCreateOrUpdate,
@@ -384,7 +474,10 @@ describe("ServiceClient", () => {
     it("should update a company on success", async () => {
       nock(API_BASE_URL)
         .put("/api/v2/companies/8")
-        .matchHeader("authorization", `Bearer ${API_KEY}`)
+        .matchHeader(
+          "authorization",
+          `Basic ${Buffer.from(`${API_KEY}:X`, "utf-8").toString("base64")}`,
+        )
         .reply(200, ApiResponseUpdateCompany, {
           "Content-Type": "application/json",
         });
@@ -397,7 +490,11 @@ describe("ServiceClient", () => {
         industry: "Aerospace and Defense",
       };
 
-      const client = new ServiceClient({ apiKey: API_KEY });
+      const client = new ServiceClient({
+        apiKey: API_KEY,
+        domain: API_DOMAIN,
+        logger: console,
+      });
       const actual = await client.updateCompany(8, payload);
       const expected: ApiResultObject<
         FreshdeskCompanyCreateOrUpdate,
@@ -416,7 +513,10 @@ describe("ServiceClient", () => {
     it("should return an error result and not throw if API responds with status 500", async () => {
       nock(API_BASE_URL)
         .put("/api/v2/companies/8")
-        .matchHeader("authorization", `Bearer ${API_KEY}`)
+        .matchHeader(
+          "authorization",
+          `Basic ${Buffer.from(`${API_KEY}:X`, "utf-8").toString("base64")}`,
+        )
         .replyWithError("Some arbitrary error");
 
       const payload = {
@@ -427,7 +527,11 @@ describe("ServiceClient", () => {
         industry: "Aerospace and Defense",
       };
 
-      const client = new ServiceClient({ apiKey: API_KEY });
+      const client = new ServiceClient({
+        apiKey: API_KEY,
+        domain: API_DOMAIN,
+        logger: console,
+      });
       const actual = await client.updateCompany(8, payload);
       const expected: ApiResultObject<
         FreshdeskCompanyCreateOrUpdate,
@@ -449,13 +553,20 @@ describe("ServiceClient", () => {
     it("should list all companies on success", async () => {
       nock(API_BASE_URL)
         .get(`/api/v2/search/companies?query="domain:'lexcorp.org'"`)
-        .matchHeader("authorization", `Bearer ${API_KEY}`)
+        .matchHeader(
+          "authorization",
+          `Basic ${Buffer.from(`${API_KEY}:X`, "utf-8").toString("base64")}`,
+        )
         .reply(200, ApiResponseFilterCompanies, {
           "Content-Type": "application/json",
         });
 
       const q = "domain:'lexcorp.org'";
-      const client = new ServiceClient({ apiKey: API_KEY });
+      const client = new ServiceClient({
+        apiKey: API_KEY,
+        domain: API_DOMAIN,
+        logger: console,
+      });
       const actual = await client.filterCompanies(q);
       const expected: ApiResultObject<
         unknown,
@@ -474,11 +585,18 @@ describe("ServiceClient", () => {
     it("should return an error result and not throw if API responds with status 500", async () => {
       nock(API_BASE_URL)
         .get(`/api/v2/search/companies?query="domain:'lexcorp.org'"`)
-        .matchHeader("authorization", `Bearer ${API_KEY}`)
+        .matchHeader(
+          "authorization",
+          `Basic ${Buffer.from(`${API_KEY}:X`, "utf-8").toString("base64")}`,
+        )
         .replyWithError("Some arbitrary error");
 
       const q = "domain:'lexcorp.org'";
-      const client = new ServiceClient({ apiKey: API_KEY });
+      const client = new ServiceClient({
+        apiKey: API_KEY,
+        domain: API_DOMAIN,
+        logger: console,
+      });
       const actual = await client.filterCompanies(q);
       const expected: ApiResultObject<
         unknown,

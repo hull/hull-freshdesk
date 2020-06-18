@@ -1,3 +1,8 @@
+import {
+  IHullUserEventProps,
+  IHullUserEventContext,
+} from "../types/user-event";
+
 export interface FreshdeskCustomFields {
   [key: string]: string | number | boolean | Date | string[];
 }
@@ -54,6 +59,7 @@ export interface FreshdeskContactField {
   choices?: FreshdeskChoices;
   created_at: string;
   updated_at: string;
+  default?: boolean;
 }
 
 export interface FreshdeskCompanyField {
@@ -89,4 +95,24 @@ export interface FreshdeskCompany extends FreshdeskCompanyCreateOrUpdate {
   id: number;
   created_at: string;
   updated_at: string;
+}
+
+export type FreshdeskObjectMetaType = "contact" | "company";
+
+export type OutgoingOperationType = "insert" | "update" | "skip";
+
+export interface OutgoingOperationEnvelope<T, U> {
+  message: T;
+  serviceId?: number;
+  serviceObject?: U;
+  operation: OutgoingOperationType;
+  notes?: string[];
+}
+
+export interface IncomingData<T, U> {
+  objectType: "user" | "account" | "event";
+  ident: T;
+  attributes: U;
+  properties?: IHullUserEventProps;
+  context?: IHullUserEventContext;
 }

@@ -1,10 +1,10 @@
-export default interface IFieldsSchema {
-    ok: boolean;
-    error: null | string;
-    options: IFieldsSchemaOption[];
+export interface FieldsSchema {
+  ok: boolean;
+  error: null | string;
+  options: FieldsSchemaOption[];
 }
 
-interface IFieldsSchemaOption {
-    value: string;
-    label: string;
+interface FieldsSchemaOption {
+  value: string;
+  label: string;
 }

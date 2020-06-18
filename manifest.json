@@ -17,6 +17,12 @@
   "settings": [],
   "private_settings": [
     {
+      "name": "domain",
+      "type": "string",
+      "title": "Freshdesk Sub-Domain",
+      "description": "Your sub-domain in Freshdesk, e.g. if your domain is `hull.freshdesk.com`, enter just `hull` here."
+    },
+    {
       "name": "api_key",
       "type": "string",
       "title": "API Key",
@@ -144,7 +150,7 @@
     {
       "title": "Freshdesk Credentials",
       "description": "Authorize the Connector to access the Freshdesk API on your behalf using your personal access token.",
-      "properties": ["private_settings.api_key"]
+      "properties": ["private_settings.domain", "private_settings.api_key"]
     },
     {
       "title": "Contacts",

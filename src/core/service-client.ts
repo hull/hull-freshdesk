@@ -10,14 +10,18 @@ import {
   FreshdeskCompanyCreateOrUpdate,
   FreshdeskCompany,
 } from "./service-objects";
+import { Logger } from "winston";
+import { logger } from "hull";
 
 export class ServiceClient {
-  readonly apiKey: string | undefined;
+  readonly apiKey: string;
   readonly apiBaseUrl: string;
+  readonly logger: Logger;
 
   constructor(options: any) {
     this.apiKey = options.apiKey;
-    this.apiBaseUrl = "https://domain.freshdesk.com";
+    this.apiBaseUrl = `https://${options.domain}.freshdesk.com`;
+    this.logger = options.logger;
   }
 
   public async listContactFields(): Promise<
@@ -28,6 +32,11 @@ export class ServiceClient {
     const axiosConfig = this.getAxiosConfig();
 
     try {
+      logger.debug(
+        "ServiceClient.listContactFields: Executing API Call...",
+        url,
+        axiosConfig,
+      );
       const axiosResponse = await axios.get<FreshdeskContactField[]>(
         url,
         axiosConfig,
@@ -39,6 +48,12 @@ export class ServiceClient {
         axiosResponse,
       );
     } catch (error) {
+      logger.error(
+        "ServiceClient.listContactFields: Failed API Call",
+        url,
+        axiosConfig,
+        error,
+      );
       return ApiUtil.handleApiResultError(url, method, undefined, error);
     }
   }
@@ -218,8 +233,9 @@ export class ServiceClient {
 
   private getAxiosConfig(): AxiosRequestConfig {
     const axiosConfig: AxiosRequestConfig = {
-      headers: {
-        Authorization: `Bearer ${this.apiKey}`,
+      auth: {
+        username: this.apiKey,
+        password: "X",
       },
       responseType: "json",
     };

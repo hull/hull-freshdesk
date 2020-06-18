@@ -120,14 +120,7 @@ export const server = (app: Application): Application => {
   );
 
   // CORS enabled endpoints
-  /*app.use(
-    "/meta/customobjects",
-    cors(),
-    actions.metaCustomObjectsFactory(container),
-  );
-
-  app.use("/meta/fields/:type", cors(), actions.metaFieldsFactory(container));
-  */
+  app.use("/meta/fields/:type", cors(), actions.metaFields(container));
 
   // OAuth handler endpoints
   //app.get("/auth", actions.authInitializerFactory(container));

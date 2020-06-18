@@ -1,0 +1,267 @@
+{
+  "connector": {
+    "manual_mode": false,
+    "transfer_exports": true,
+    "accept_incoming_webhooks": true,
+    "source_url": "https://freshdesk.hullconnectors.net/",
+    "private_settings": {
+      "contact_synchronized_segments": [],
+      "contact_lookup_attribute_email": "email",
+      "contact_lookup_attribute_unique_external_id": "external_id",
+      "api_key": "1234",
+      "account_synchronized_segments": [],
+      "account_lookup_attribute_domain": "domain",
+      "account_filter_inbound_require_domain": false,
+      "domain": "domain"
+    },
+    "index": "https://freshdesk.hullconnectors.net/",
+    "name": "hull-freshdesk.ngrok.io",
+    "transfer_notifications": true,
+    "settings": {},
+    "type": "ship",
+    "manifest": {
+      "description": "Synchronize Contacts and Accounts with Freshdesk and Fetch Tickets",
+      "tags": [
+        "outgoing",
+        "oneColumn",
+        "batch",
+        "batch-accounts",
+        "smart-notifier"
+      ],
+      "private_settings": [
+        {
+          "name": "domain",
+          "type": "string",
+          "title": "Freshdesk Sub-Domain",
+          "description": "Your sub-domain in Freshdesk, e.g. if your domain is `hull.freshdesk.com`, enter just `hull` here."
+        },
+        {
+          "name": "api_key",
+          "type": "string",
+          "title": "API Key",
+          "description": "For details how to find your API Key, please refer to this [solution article](https://support.freshdesk.com/support/solutions/articles/215517) from Freshdesk."
+        },
+        {
+          "name": "contact_synchronized_segments",
+          "title": "User Filter",
+          "description": "Synchronize Hull Users to Freshdesk Contacts when they are part of one of these segments.",
+          "type": "array",
+          "format": "segment",
+          "default": []
+        },
+        {
+          "name": "contact_lookup_attribute_email",
+          "title": "Email Lookup",
+          "description": "Define which attribute on the Hull User Profile shall be used to lookup Contacts in Freshdesk by their email.",
+          "type": "string",
+          "format": "trait",
+          "default": "email"
+        },
+        {
+          "name": "contact_lookup_attribute_unique_external_id",
+          "title": "Unique External ID Lookup",
+          "description": "Define which attribute on the Hull User Profile shall be used to lookup Contacts in Freshdesk by their unique external id.",
+          "type": "string",
+          "format": "trait",
+          "default": "external_id"
+        },
+        {
+          "name": "contact_attributes_outbound",
+          "title": "Outgoing Attributes",
+          "description": "Map the attributes of Hull Users to send.",
+          "type": "array",
+          "format": "traitMapping",
+          "options": {
+            "direction": "outgoing",
+            "showOverwriteToggle": false,
+            "placeholder": "Freshdesk Field",
+            "allowCreate": false,
+            "loadOptions": "/meta/fields/contact"
+          }
+        },
+        {
+          "name": "contact_attributes_inbound",
+          "title": "Incoming Fields",
+          "description": "Map the fields of Freshdesk Contacts to fetch.",
+          "type": "array",
+          "format": "traitMapping",
+          "options": {
+            "direction": "incoming",
+            "showOverwriteToggle": false,
+            "placeholder": "Freshdesk Field",
+            "allowCreate": true,
+            "loadOptions": "/meta/fields/contact",
+            "source": "freshdesk"
+          }
+        },
+        {
+          "name": "account_synchronized_segments",
+          "title": "Account Filter",
+          "description": "Synchronize Hull Accounts to Freshdesk Companies when they are part of one of these segments.",
+          "type": "array",
+          "format": "accountSegment",
+          "default": []
+        },
+        {
+          "name": "account_lookup_attribute_domain",
+          "title": "Domain Lookup",
+          "description": "Define which attribute on the Hull Account Profile shall be used to lookup Companies in Freshdesk by their domain.",
+          "type": "string",
+          "format": "accountTrait",
+          "default": "domain"
+        },
+        {
+          "name": "account_attributes_outbound",
+          "title": "Outgoing Attributes",
+          "description": "Map the attributes of Hull Accounts to send.",
+          "type": "array",
+          "format": "accountTraitMapping",
+          "options": {
+            "direction": "outgoing",
+            "showOverwriteToggle": false,
+            "placeholder": "Freshdesk Field",
+            "allowCreate": false,
+            "loadOptions": "/meta/fields/company"
+          }
+        },
+        {
+          "name": "account_filter_inbound_require_domain",
+          "title": "Require Domain for Incoming",
+          "description": "Skip Companies when importing data that do not have a domain in Freshdesk",
+          "type": "boolean",
+          "default": false
+        },
+        {
+          "name": "account_attributes_inbound",
+          "title": "Incoming Fields",
+          "description": "Map the fields of Freshdesk Companies to fetch.",
+          "type": "array",
+          "format": "accountTraitMapping",
+          "options": {
+            "direction": "incoming",
+            "showOverwriteToggle": false,
+            "placeholder": "Freshdesk Field",
+            "allowCreate": true,
+            "loadOptions": "/meta/fields/company",
+            "source": "freshdesk"
+          }
+        }
+      ],
+      "tabs": [],
+      "name": "Freshdesk [BETA]",
+      "settings": [],
+      "subscriptions": [
+        {
+          "url": "/smart-notifier"
+        }
+      ],
+      "ui": false,
+      "readme": "readme.md",
+      "schedules": [
+        {
+          "url": "/status",
+          "type": "interval",
+          "value": "30"
+        }
+      ],
+      "version": "0.1.0"
+    },
+    "secret": "1738256y8hum9jugh9h5huj",
+    "updated_at": "2020-06-18T08:40:33Z",
+    "status": {
+      "updated_at": "2020-06-18T09:18:24Z",
+      "name": "hull-freshdesk.ngrok.io",
+      "id": "1234"
+    },
+    "id": "1234",
+    "picture": null,
+    "homepage_url": "https://test.hullapp.io/ships/1234",
+    "manifest_url": "https://freshdesk.hullconnectors.net/manifest.json",
+    "poll_scheduled_calls": true,
+    "created_at": "2020-06-16T11:52:21Z"
+  },
+  "accounts_segments": [],
+  "channel": "user:update",
+  "is_export": false,
+  "segments": [
+    {
+      "id": "5e08c8938ee92e958601d6fd",
+      "updated_at": "2019-12-29T15:38:59Z",
+      "created_at": "2019-12-29T15:38:59Z",
+      "name": "Hubspot Contacts",
+      "type": "users_segment",
+      "stats": {}
+    },
+    {
+      "id": "5ebd6b554aa88c8b6898eaa8",
+      "updated_at": "2020-05-14T16:01:25Z",
+      "created_at": "2020-05-14T16:01:25Z",
+      "name": "SFDC Contacts w/ Dependent Object",
+      "type": "users_segment",
+      "stats": {}
+    }
+  ],
+  "messages": [
+    {
+      "notification-timestamp": 1592471910,
+      "user": {
+        "external_id": "test-user-dy48em",
+        "id": "5eeb3121d69442efa16abd62",
+        "email": "freshdesk1@example.org",
+        "name": "Freshdesk Test1",
+        "domain": "example.org",
+        "last_name": "Test1",
+        "indexed_at": "2020-06-18T09:17:21.269Z",
+        "first_name": "Freshdesk",
+        "created_at": "2020-06-18T09:17:21.263Z"
+      },
+      "uuid": "e9e2c460-1351-4b30-bd2b-7b0e595009f2",
+      "org-id": "5df3821a1670868092003422",
+      "changes": {
+        "is_new": true,
+        "user": {
+          "external_id": [null, "test-user-dy48em"],
+          "id": [null, "5eeb3121d69442efa16abd62"],
+          "email": [null, "freshdesk1@example.org"],
+          "name": [null, "Freshdesk Test1"],
+          "domain": [null, "example.org"],
+          "last_name": [null, "Test1"],
+          "first_name": [null, "Freshdesk"],
+          "created_at": [null, "2020-06-18T09:17:21.263Z"]
+        },
+        "account": {},
+        "segments": {},
+        "account_segments": {}
+      },
+      "account": {},
+      "segments": [],
+      "events": [],
+      "account_segments": [],
+      "update_id": "test.hullapp.io:std:25514",
+      "message_id": "debecb8b324b19cb6fc86ecf3656c2c7cea6dc9a"
+    }
+  ],
+  "notification_id": "a5d9556b-bfb3-49a9-ba31-fbc93d1f0d56",
+  "kraken": {
+    "retries": 0,
+    "checkpoints": {
+      "kraken.lane/commands": 96618,
+      "kraken.lane/accounts": 5,
+      "kraken.lane/std": 25514
+    },
+    "flow-control": {
+      "warning": null,
+      "max-messages": 10,
+      "min-delay": 1,
+      "max-delay": 10000,
+      "type": "next"
+    },
+    "estimated-optimal-shipment-size": 2,
+    "update-ids": ["test.hullapp.io:std:25514"]
+  },
+  "configuration": {
+    "id": "1234",
+    "organization": "test.hullapp.io",
+    "secret": "1738256y8hum9jugh9h5huj"
+  }
+}

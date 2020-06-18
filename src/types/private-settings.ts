@@ -4,6 +4,7 @@ export interface MappingEntry {
 }
 
 export interface PrivateSettings {
+  domain?: string;
   api_key?: string;
   contact_synchronized_segments: string[];
   contact_lookup_attribute_email?: string;
