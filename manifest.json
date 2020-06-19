@@ -13,6 +13,7 @@
   "version": "0.1.0",
   "source": "freshdesk",
   "logo": "logo.png",
+  "picture": "picture.png",
   "ui": false,
   "settings": [],
   "private_settings": [

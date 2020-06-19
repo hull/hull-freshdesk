@@ -5,11 +5,25 @@ import {
   FreshdeskContactCreateUpdate,
   OutgoingOperationEnvelope,
   IncomingData,
+  FreshdeskCompanyCreateOrUpdate,
 } from "../../src/core/service-objects";
 import ApiResponseContactFields from "../_data/api__list_all_contact_fields.json";
 import _ from "lodash";
 import ApiCreateContactResponse from "../_data/api__create_contact.json";
 import { IHullUserClaims, IHullUserAttributes } from "../../src/types/user";
+import AccountUpdateNotification from "../_data/hull__account_update_message.json";
+import IHullAccountUpdateMessage from "../../src/types/account-update-message";
+import ApiResponseCompanyFields from "../_data/api__list_all_company_fields.json";
+import ApiCreateCompanyResponse from "../_data/api__create_company.json";
+import {
+  VALIDATION_SKIP_ACCOUNT_NODOMAINLOOKUP,
+  VALIDATION_WARN_ACCOUNT_INVALIDMAPPINGOUT,
+  VALIDATION_SKIP_ACCOUNT_NONAMEMAPPING,
+} from "../../src/core/messages";
+import {
+  IHullAccountAttributes,
+  IHullAccountClaims,
+} from "../../src/types/account";
 
 describe("MappingUtil", () => {
   describe("constructor()", () => {
@@ -26,6 +40,7 @@ describe("MappingUtil", () => {
         },
         logger: console,
         contactFields: ApiResponseContactFields,
+        companyFields: ApiResponseCompanyFields,
       };
 
       const util = new MappingUtil(options);
@@ -56,6 +71,7 @@ describe("MappingUtil", () => {
         },
         logger: console,
         contactFields: ApiResponseContactFields,
+        companyFields: ApiResponseCompanyFields,
       };
 
       const userMessage = UserUpdateNotification.messages[0];
@@ -108,6 +124,7 @@ describe("MappingUtil", () => {
         },
         logger: console,
         contactFields: ApiResponseContactFields,
+        companyFields: ApiResponseCompanyFields,
       };
 
       const userMessage = UserUpdateNotification.messages[0];
@@ -159,6 +176,7 @@ describe("MappingUtil", () => {
         },
         logger: console,
         contactFields: ApiResponseContactFields,
+        companyFields: ApiResponseCompanyFields,
       };
 
       const userMessage = UserUpdateNotification.messages[0];
@@ -213,6 +231,7 @@ describe("MappingUtil", () => {
         },
         logger: console,
         contactFields: ApiResponseContactFields,
+        companyFields: ApiResponseCompanyFields,
       };
 
       const userMessage = UserUpdateNotification.messages[0];
@@ -270,6 +289,7 @@ describe("MappingUtil", () => {
         },
         logger: console,
         contactFields: ApiResponseContactFields,
+        companyFields: ApiResponseCompanyFields,
       };
 
       const userMessage = UserUpdateNotification.messages[0];
@@ -326,6 +346,7 @@ describe("MappingUtil", () => {
         },
         logger: console,
         contactFields: ApiResponseContactFields,
+        companyFields: ApiResponseCompanyFields,
       };
 
       const userMessage = UserUpdateNotification.messages[0];
@@ -379,6 +400,7 @@ describe("MappingUtil", () => {
         },
         logger: console,
         contactFields: ApiResponseContactFields,
+        companyFields: ApiResponseCompanyFields,
       };
 
       const userMessage = UserUpdateNotification.messages[0];
@@ -436,6 +458,7 @@ describe("MappingUtil", () => {
         },
         logger: console,
         contactFields: ApiResponseContactFields,
+        companyFields: ApiResponseCompanyFields,
       };
 
       options.contactFields.push({
@@ -519,6 +542,7 @@ describe("MappingUtil", () => {
         },
         logger: console,
         contactFields: ApiResponseContactFields,
+        companyFields: ApiResponseCompanyFields,
       };
 
       const expected: IncomingData<IHullUserClaims, IHullUserAttributes> = {
@@ -540,6 +564,61 @@ describe("MappingUtil", () => {
 
       const util = new MappingUtil(options);
       const actual = util.mapServiceObjectToHullUser(ApiCreateContactResponse);
+
+      expect(actual).toEqual(expected);
+    });
+
+    it("should map a Freshdesk Contact to a Hull User without email", () => {
+      const options = {
+        privateSettings: {
+          contact_synchronized_segments: [],
+          contact_attributes_outbound: [],
+          contact_attributes_inbound: [
+            {
+              hull: "traits_freshdesk/name",
+              service: "name",
+              overwrite: true,
+            },
+            {
+              hull: "traits_freshdesk/job_title",
+              service: "job_title",
+              overwrite: true,
+            },
+          ],
+          account_synchronized_segments: [],
+          account_attributes_outbound: [],
+          account_attributes_inbound: [],
+          account_filter_inbound_require_domain: false,
+          contact_lookup_attribute_email: "email",
+        },
+        logger: console,
+        contactFields: ApiResponseContactFields,
+        companyFields: ApiResponseCompanyFields,
+      };
+
+      const expected: IncomingData<IHullUserClaims, IHullUserAttributes> = {
+        objectType: "user",
+        ident: {
+          anonymous_id: `freshdesk:${ApiCreateContactResponse.id}`,
+        },
+        attributes: {
+          "freshdesk/id": {
+            value: ApiCreateContactResponse.id,
+            operation: "setIfNull",
+          },
+          "freshdesk/name": ApiCreateContactResponse.name,
+          "freshdesk/job_title": ApiCreateContactResponse.job_title,
+        },
+      };
+
+      const serviceObject = {
+        ...ApiCreateContactResponse,
+      };
+
+      _.unset(serviceObject, "email");
+
+      const util = new MappingUtil(options);
+      const actual = util.mapServiceObjectToHullUser(serviceObject);
 
       expect(actual).toEqual(expected);
     });
@@ -574,6 +653,7 @@ describe("MappingUtil", () => {
         },
         logger: console,
         contactFields: ApiResponseContactFields,
+        companyFields: ApiResponseCompanyFields,
       };
 
       const expected: IncomingData<IHullUserClaims, IHullUserAttributes> = {
@@ -636,6 +716,7 @@ describe("MappingUtil", () => {
         },
         logger: console,
         contactFields: ApiResponseContactFields,
+        companyFields: ApiResponseCompanyFields,
       };
 
       const expected: IncomingData<IHullUserClaims, IHullUserAttributes> = {
@@ -691,6 +772,7 @@ describe("MappingUtil", () => {
         },
         logger: console,
         contactFields: ApiResponseContactFields,
+        companyFields: ApiResponseCompanyFields,
       };
 
       const expected: IncomingData<IHullUserClaims, IHullUserAttributes> = {
@@ -712,6 +794,798 @@ describe("MappingUtil", () => {
 
       const util = new MappingUtil(options);
       const actual = util.mapServiceObjectToHullUser(ApiCreateContactResponse);
+
+      expect(actual).toEqual(expected);
+    });
+  });
+
+  describe("mapHullAccountToServiceObject()", () => {
+    it("should map a Hull Account to a Freshdesk Company", () => {
+      const options = {
+        privateSettings: {
+          contact_synchronized_segments: [],
+          contact_attributes_outbound: [],
+          contact_attributes_inbound: [],
+          account_synchronized_segments: [],
+          account_attributes_outbound: [
+            {
+              hull: "name",
+              service: "name",
+              overwrite: true,
+            },
+          ],
+          account_attributes_inbound: [],
+          account_filter_inbound_require_domain: false,
+          contact_lookup_attribute_email: "email",
+          account_lookup_attribute_domain: "domain",
+        },
+        logger: console,
+        contactFields: ApiResponseContactFields,
+        companyFields: ApiResponseCompanyFields,
+      };
+
+      const accountMessage = AccountUpdateNotification.messages[0];
+      const envelope: OutgoingOperationEnvelope<
+        IHullAccountUpdateMessage,
+        FreshdeskCompanyCreateOrUpdate
+      > = {
+        message: accountMessage,
+        operation: "insert",
+      };
+
+      const expected: OutgoingOperationEnvelope<
+        IHullAccountUpdateMessage,
+        FreshdeskCompanyCreateOrUpdate
+      > = {
+        ...envelope,
+        serviceObject: {
+          name: accountMessage.account.name,
+          domains: [accountMessage.account.domain],
+        },
+      };
+
+      const util = new MappingUtil(options);
+      const actual = util.mapHullAccountToServiceObject(envelope);
+      expect(actual).toEqual(expected);
+    });
+
+    it("should map a Hull Account to a Freshdesk Company and ignore incomplete mappings", () => {
+      const options = {
+        privateSettings: {
+          contact_synchronized_segments: [],
+          contact_attributes_outbound: [],
+          contact_attributes_inbound: [],
+          account_synchronized_segments: [],
+          account_attributes_outbound: [
+            {
+              hull: "name",
+              service: "name",
+              overwrite: true,
+            },
+            {
+              hull: "foo",
+              service: null,
+              overwrite: true,
+            },
+          ],
+          account_attributes_inbound: [],
+          account_filter_inbound_require_domain: false,
+          contact_lookup_attribute_email: "email",
+          account_lookup_attribute_domain: "domain",
+        },
+        logger: console,
+        contactFields: ApiResponseContactFields,
+        companyFields: ApiResponseCompanyFields,
+      };
+
+      const accountMessage = AccountUpdateNotification.messages[0];
+      const envelope: OutgoingOperationEnvelope<
+        IHullAccountUpdateMessage,
+        FreshdeskCompanyCreateOrUpdate
+      > = {
+        message: accountMessage,
+        operation: "insert",
+      };
+
+      const expected: OutgoingOperationEnvelope<
+        IHullAccountUpdateMessage,
+        FreshdeskCompanyCreateOrUpdate
+      > = {
+        ...envelope,
+        serviceObject: {
+          name: accountMessage.account.name,
+          domains: [accountMessage.account.domain],
+        },
+      };
+
+      const util = new MappingUtil(options);
+      const actual = util.mapHullAccountToServiceObject(envelope);
+      expect(actual).toEqual(expected);
+    });
+
+    it("should map a Hull Account to a Freshdesk Company and skip when no domain lookup", () => {
+      const options = {
+        privateSettings: {
+          contact_synchronized_segments: [],
+          contact_attributes_outbound: [],
+          contact_attributes_inbound: [],
+          account_synchronized_segments: [],
+          account_attributes_outbound: [
+            {
+              hull: "name",
+              service: "name",
+              overwrite: true,
+            },
+          ],
+          account_attributes_inbound: [],
+          account_filter_inbound_require_domain: false,
+        },
+        logger: console,
+        contactFields: ApiResponseContactFields,
+        companyFields: ApiResponseCompanyFields,
+      };
+
+      const accountMessage = AccountUpdateNotification.messages[0];
+      const envelope: OutgoingOperationEnvelope<
+        IHullAccountUpdateMessage,
+        FreshdeskCompanyCreateOrUpdate
+      > = {
+        message: accountMessage,
+        operation: "insert",
+      };
+
+      const expected: OutgoingOperationEnvelope<
+        IHullAccountUpdateMessage,
+        FreshdeskCompanyCreateOrUpdate
+      > = {
+        ...envelope,
+        operation: "skip",
+        serviceObject: {
+          name: accountMessage.account.name,
+        },
+        notes: [VALIDATION_SKIP_ACCOUNT_NODOMAINLOOKUP],
+      };
+
+      const util = new MappingUtil(options);
+      const actual = util.mapHullAccountToServiceObject(envelope);
+      expect(actual).toEqual(expected);
+    });
+
+    it("should map a Hull Account to a Freshdesk Company and skip when no domain lookup and add to previous notes", () => {
+      const options = {
+        privateSettings: {
+          contact_synchronized_segments: [],
+          contact_attributes_outbound: [],
+          contact_attributes_inbound: [],
+          account_synchronized_segments: [],
+          account_attributes_outbound: [
+            {
+              hull: "name",
+              service: "name",
+              overwrite: true,
+            },
+          ],
+          account_attributes_inbound: [],
+          account_filter_inbound_require_domain: false,
+        },
+        logger: console,
+        contactFields: ApiResponseContactFields,
+        companyFields: ApiResponseCompanyFields,
+      };
+
+      const accountMessage = AccountUpdateNotification.messages[0];
+      const envelope: OutgoingOperationEnvelope<
+        IHullAccountUpdateMessage,
+        FreshdeskCompanyCreateOrUpdate
+      > = {
+        message: accountMessage,
+        operation: "insert",
+        notes: ["Previous note"],
+      };
+
+      const expected: OutgoingOperationEnvelope<
+        IHullAccountUpdateMessage,
+        FreshdeskCompanyCreateOrUpdate
+      > = {
+        ...envelope,
+        operation: "skip",
+        serviceObject: {
+          name: accountMessage.account.name,
+        },
+        notes: ["Previous note", VALIDATION_SKIP_ACCOUNT_NODOMAINLOOKUP],
+      };
+
+      const util = new MappingUtil(options);
+      const actual = util.mapHullAccountToServiceObject(envelope);
+      expect(actual).toEqual(expected);
+    });
+
+    it("should map a Hull Account to a Freshdesk Company with custom_fields", () => {
+      const options = {
+        privateSettings: {
+          contact_synchronized_segments: [],
+          contact_attributes_outbound: [],
+          contact_attributes_inbound: [],
+          account_synchronized_segments: [],
+          account_attributes_outbound: [
+            {
+              hull: "name",
+              service: "name",
+              overwrite: true,
+            },
+            {
+              hull: "domain",
+              service: "website",
+              overwrite: true,
+            },
+          ],
+          account_attributes_inbound: [],
+          account_filter_inbound_require_domain: false,
+          contact_lookup_attribute_email: "email",
+          account_lookup_attribute_domain: "domain",
+        },
+        logger: console,
+        contactFields: ApiResponseContactFields,
+        companyFields: ApiResponseCompanyFields,
+      };
+
+      const accountMessage = AccountUpdateNotification.messages[0];
+      const envelope: OutgoingOperationEnvelope<
+        IHullAccountUpdateMessage,
+        FreshdeskCompanyCreateOrUpdate
+      > = {
+        message: accountMessage,
+        operation: "insert",
+      };
+
+      const expected: OutgoingOperationEnvelope<
+        IHullAccountUpdateMessage,
+        FreshdeskCompanyCreateOrUpdate
+      > = {
+        ...envelope,
+        serviceObject: {
+          name: accountMessage.account.name,
+          domains: [accountMessage.account.domain],
+          custom_fields: {
+            website: accountMessage.account.domain,
+          },
+        },
+      };
+
+      const util = new MappingUtil(options);
+      const actual = util.mapHullAccountToServiceObject(envelope);
+      expect(actual).toEqual(expected);
+    });
+
+    it("should map a Hull Account to a Freshdesk Company and ignore invalid mappings", () => {
+      const options = {
+        privateSettings: {
+          contact_synchronized_segments: [],
+          contact_attributes_outbound: [],
+          contact_attributes_inbound: [],
+          account_synchronized_segments: [],
+          account_attributes_outbound: [
+            {
+              hull: "name",
+              service: "name",
+              overwrite: true,
+            },
+            {
+              hull: "foo",
+              service: "foo",
+              overwrite: true,
+            },
+          ],
+          account_attributes_inbound: [],
+          account_filter_inbound_require_domain: false,
+          contact_lookup_attribute_email: "email",
+          account_lookup_attribute_domain: "domain",
+        },
+        logger: console,
+        contactFields: ApiResponseContactFields,
+        companyFields: ApiResponseCompanyFields,
+      };
+
+      const accountMessage = AccountUpdateNotification.messages[0];
+      const envelope: OutgoingOperationEnvelope<
+        IHullAccountUpdateMessage,
+        FreshdeskCompanyCreateOrUpdate
+      > = {
+        message: accountMessage,
+        operation: "insert",
+      };
+
+      const expected: OutgoingOperationEnvelope<
+        IHullAccountUpdateMessage,
+        FreshdeskCompanyCreateOrUpdate
+      > = {
+        ...envelope,
+        serviceObject: {
+          name: accountMessage.account.name,
+          domains: [accountMessage.account.domain],
+        },
+        notes: [VALIDATION_WARN_ACCOUNT_INVALIDMAPPINGOUT("foo")],
+      };
+
+      const util = new MappingUtil(options);
+      const actual = util.mapHullAccountToServiceObject(envelope);
+      expect(actual).toEqual(expected);
+    });
+
+    it("should map a Hull Account to a Freshdesk Company and ignore invalid mappings and add to previous notes", () => {
+      const options = {
+        privateSettings: {
+          contact_synchronized_segments: [],
+          contact_attributes_outbound: [],
+          contact_attributes_inbound: [],
+          account_synchronized_segments: [],
+          account_attributes_outbound: [
+            {
+              hull: "name",
+              service: "name",
+              overwrite: true,
+            },
+            {
+              hull: "foo",
+              service: "foo",
+              overwrite: true,
+            },
+          ],
+          account_attributes_inbound: [],
+          account_filter_inbound_require_domain: false,
+          contact_lookup_attribute_email: "email",
+          account_lookup_attribute_domain: "domain",
+        },
+        logger: console,
+        contactFields: ApiResponseContactFields,
+        companyFields: ApiResponseCompanyFields,
+      };
+
+      const accountMessage = AccountUpdateNotification.messages[0];
+      const envelope: OutgoingOperationEnvelope<
+        IHullAccountUpdateMessage,
+        FreshdeskCompanyCreateOrUpdate
+      > = {
+        message: accountMessage,
+        operation: "insert",
+        notes: ["Previous note"],
+      };
+
+      const expected: OutgoingOperationEnvelope<
+        IHullAccountUpdateMessage,
+        FreshdeskCompanyCreateOrUpdate
+      > = {
+        ...envelope,
+        serviceObject: {
+          name: accountMessage.account.name,
+          domains: [accountMessage.account.domain],
+        },
+        notes: [
+          "Previous note",
+          VALIDATION_WARN_ACCOUNT_INVALIDMAPPINGOUT("foo"),
+        ],
+      };
+
+      const util = new MappingUtil(options);
+      const actual = util.mapHullAccountToServiceObject(envelope);
+      expect(actual).toEqual(expected);
+    });
+
+    it("should map a Hull Account to a Freshdesk Company and skip when no name mapping", () => {
+      const options = {
+        privateSettings: {
+          contact_synchronized_segments: [],
+          contact_attributes_outbound: [],
+          contact_attributes_inbound: [],
+          account_synchronized_segments: [],
+          account_attributes_outbound: [],
+          account_attributes_inbound: [],
+          account_filter_inbound_require_domain: false,
+          contact_lookup_attribute_email: "email",
+          account_lookup_attribute_domain: "domain",
+        },
+        logger: console,
+        contactFields: ApiResponseContactFields,
+        companyFields: ApiResponseCompanyFields,
+      };
+
+      const accountMessage = AccountUpdateNotification.messages[0];
+      const envelope: OutgoingOperationEnvelope<
+        IHullAccountUpdateMessage,
+        FreshdeskCompanyCreateOrUpdate
+      > = {
+        message: accountMessage,
+        operation: "insert",
+      };
+
+      const expected: OutgoingOperationEnvelope<
+        IHullAccountUpdateMessage,
+        unknown
+      > = {
+        ...envelope,
+        operation: "skip",
+        serviceObject: {
+          domains: [accountMessage.account.domain],
+        },
+        notes: [VALIDATION_SKIP_ACCOUNT_NONAMEMAPPING],
+      };
+
+      const util = new MappingUtil(options);
+      const actual = util.mapHullAccountToServiceObject(envelope);
+      expect(actual).toEqual(expected);
+    });
+
+    it("should map a Hull Account to a Freshdesk Company and skip when no name mapping and add to previous notes", () => {
+      const options = {
+        privateSettings: {
+          contact_synchronized_segments: [],
+          contact_attributes_outbound: [],
+          contact_attributes_inbound: [],
+          account_synchronized_segments: [],
+          account_attributes_outbound: [],
+          account_attributes_inbound: [],
+          account_filter_inbound_require_domain: false,
+          contact_lookup_attribute_email: "email",
+          account_lookup_attribute_domain: "domain",
+        },
+        logger: console,
+        contactFields: ApiResponseContactFields,
+        companyFields: ApiResponseCompanyFields,
+      };
+
+      const accountMessage = AccountUpdateNotification.messages[0];
+      const envelope: OutgoingOperationEnvelope<
+        IHullAccountUpdateMessage,
+        FreshdeskCompanyCreateOrUpdate
+      > = {
+        message: accountMessage,
+        operation: "insert",
+        notes: ["Previous note"],
+      };
+
+      const expected: OutgoingOperationEnvelope<
+        IHullAccountUpdateMessage,
+        unknown
+      > = {
+        ...envelope,
+        operation: "skip",
+        serviceObject: {
+          domains: [accountMessage.account.domain],
+        },
+        notes: ["Previous note", VALIDATION_SKIP_ACCOUNT_NONAMEMAPPING],
+      };
+
+      const util = new MappingUtil(options);
+      const actual = util.mapHullAccountToServiceObject(envelope);
+      expect(actual).toEqual(expected);
+    });
+  });
+
+  describe("mapServiceObjectToHullAccount()", () => {
+    it("should map a Freshdesk Company to a Hull Account", () => {
+      const options = {
+        privateSettings: {
+          contact_synchronized_segments: [],
+          contact_attributes_outbound: [],
+          contact_attributes_inbound: [],
+          account_synchronized_segments: [],
+          account_attributes_outbound: [],
+          account_attributes_inbound: [
+            {
+              hull: "freshdesk/name",
+              service: "name",
+              overwrite: true,
+            },
+            {
+              hull: "freshdesk/domains",
+              service: "domains",
+              overwrite: true,
+            },
+            {
+              hull: "freshdesk/account_tier",
+              service: "account_tier",
+              overwrite: true,
+            },
+          ],
+          account_filter_inbound_require_domain: false,
+          contact_lookup_attribute_email: "email",
+        },
+        logger: console,
+        contactFields: ApiResponseContactFields,
+        companyFields: ApiResponseCompanyFields,
+      };
+
+      const expected: IncomingData<
+        IHullAccountClaims,
+        IHullAccountAttributes
+      > = {
+        objectType: "account",
+        ident: {
+          domain: ApiCreateCompanyResponse.domains[0],
+          anonymous_id: `freshdesk:${ApiCreateCompanyResponse.id}`,
+        },
+        attributes: {
+          "freshdesk/id": {
+            value: ApiCreateCompanyResponse.id,
+            operation: "setIfNull",
+          },
+          "freshdesk/domains": ApiCreateCompanyResponse.domains,
+          "freshdesk/name": ApiCreateCompanyResponse.name,
+          "freshdesk/account_tier": ApiCreateCompanyResponse.account_tier,
+        },
+      };
+
+      const util = new MappingUtil(options);
+      const actual = util.mapServiceObjectToHullAccount(
+        ApiCreateCompanyResponse,
+      );
+
+      expect(actual).toEqual(expected);
+    });
+
+    it("should map a Freshdesk Company to a Hull Account without domains", () => {
+      const options = {
+        privateSettings: {
+          contact_synchronized_segments: [],
+          contact_attributes_outbound: [],
+          contact_attributes_inbound: [],
+          account_synchronized_segments: [],
+          account_attributes_outbound: [],
+          account_attributes_inbound: [
+            {
+              hull: "freshdesk/name",
+              service: "name",
+              overwrite: true,
+            },
+            {
+              hull: "freshdesk/domains",
+              service: "domains",
+              overwrite: true,
+            },
+            {
+              hull: "freshdesk/account_tier",
+              service: "account_tier",
+              overwrite: true,
+            },
+          ],
+          account_filter_inbound_require_domain: false,
+          contact_lookup_attribute_email: "email",
+        },
+        logger: console,
+        contactFields: ApiResponseContactFields,
+        companyFields: ApiResponseCompanyFields,
+      };
+
+      const expected: IncomingData<
+        IHullAccountClaims,
+        IHullAccountAttributes
+      > = {
+        objectType: "account",
+        ident: {
+          anonymous_id: `freshdesk:${ApiCreateCompanyResponse.id}`,
+        },
+        attributes: {
+          "freshdesk/id": {
+            value: ApiCreateCompanyResponse.id,
+            operation: "setIfNull",
+          },
+          "freshdesk/name": ApiCreateCompanyResponse.name,
+          "freshdesk/account_tier": ApiCreateCompanyResponse.account_tier,
+        },
+      };
+
+      const serviceObject = {
+        ...ApiCreateCompanyResponse,
+      };
+
+      _.unset(serviceObject, "domains");
+
+      const util = new MappingUtil(options);
+      const actual = util.mapServiceObjectToHullAccount(serviceObject);
+
+      expect(actual).toEqual(expected);
+    });
+
+    it("should map a Freshdesk Company to a Hull Account with custom fields", () => {
+      const options = {
+        privateSettings: {
+          contact_synchronized_segments: [],
+          contact_attributes_outbound: [],
+          contact_attributes_inbound: [],
+          account_synchronized_segments: [],
+          account_attributes_outbound: [],
+          account_attributes_inbound: [
+            {
+              hull: "freshdesk/name",
+              service: "name",
+              overwrite: true,
+            },
+            {
+              hull: "freshdesk/domains",
+              service: "domains",
+              overwrite: true,
+            },
+            {
+              hull: "freshdesk/account_tier",
+              service: "account_tier",
+              overwrite: true,
+            },
+            {
+              hull: "freshdesk/website",
+              service: "website",
+              overwrite: true,
+            },
+          ],
+          account_filter_inbound_require_domain: false,
+          contact_lookup_attribute_email: "email",
+        },
+        logger: console,
+        contactFields: ApiResponseContactFields,
+        companyFields: ApiResponseCompanyFields,
+      };
+
+      const expected: IncomingData<
+        IHullAccountClaims,
+        IHullAccountAttributes
+      > = {
+        objectType: "account",
+        ident: {
+          domain: ApiCreateCompanyResponse.domains[0],
+          anonymous_id: `freshdesk:${ApiCreateCompanyResponse.id}`,
+        },
+        attributes: {
+          "freshdesk/id": {
+            value: ApiCreateCompanyResponse.id,
+            operation: "setIfNull",
+          },
+          "freshdesk/domains": ApiCreateCompanyResponse.domains,
+          "freshdesk/name": ApiCreateCompanyResponse.name,
+          "freshdesk/account_tier": ApiCreateCompanyResponse.account_tier,
+          "freshdesk/website": "supernova.com",
+        },
+      };
+
+      const serviceObject = {
+        ...ApiCreateCompanyResponse,
+        custom_fields: {
+          website: "supernova.com",
+        },
+      };
+
+      const util = new MappingUtil(options);
+      const actual = util.mapServiceObjectToHullAccount(serviceObject);
+
+      expect(actual).toEqual(expected);
+    });
+
+    it("should map a Freshdesk Company to a Hull Account and ignore invalid mappings", () => {
+      const options = {
+        privateSettings: {
+          contact_synchronized_segments: [],
+          contact_attributes_outbound: [],
+          contact_attributes_inbound: [],
+          account_synchronized_segments: [],
+          account_attributes_outbound: [],
+          account_attributes_inbound: [
+            {
+              hull: "freshdesk/name",
+              service: "name",
+              overwrite: true,
+            },
+            {
+              hull: "freshdesk/domains",
+              service: "domains",
+              overwrite: true,
+            },
+            {
+              hull: "freshdesk/account_tier",
+              service: "account_tier",
+              overwrite: true,
+            },
+            {
+              hull: "freshdesk/foo",
+              service: "foo",
+              overwrite: true,
+            },
+          ],
+          account_filter_inbound_require_domain: false,
+          contact_lookup_attribute_email: "email",
+        },
+        logger: console,
+        contactFields: ApiResponseContactFields,
+        companyFields: ApiResponseCompanyFields,
+      };
+
+      const expected: IncomingData<
+        IHullAccountClaims,
+        IHullAccountAttributes
+      > = {
+        objectType: "account",
+        ident: {
+          domain: ApiCreateCompanyResponse.domains[0],
+          anonymous_id: `freshdesk:${ApiCreateCompanyResponse.id}`,
+        },
+        attributes: {
+          "freshdesk/id": {
+            value: ApiCreateCompanyResponse.id,
+            operation: "setIfNull",
+          },
+          "freshdesk/domains": ApiCreateCompanyResponse.domains,
+          "freshdesk/name": ApiCreateCompanyResponse.name,
+          "freshdesk/account_tier": ApiCreateCompanyResponse.account_tier,
+        },
+      };
+
+      const util = new MappingUtil(options);
+      const actual = util.mapServiceObjectToHullAccount(
+        ApiCreateCompanyResponse,
+      );
+
+      expect(actual).toEqual(expected);
+    });
+
+    it("should map a Freshdesk Company to a Hull Account and ignore incomplete mappings", () => {
+      const options = {
+        privateSettings: {
+          contact_synchronized_segments: [],
+          contact_attributes_outbound: [],
+          contact_attributes_inbound: [],
+          account_synchronized_segments: [],
+          account_attributes_outbound: [],
+          account_attributes_inbound: [
+            {
+              hull: "freshdesk/name",
+              service: "name",
+              overwrite: true,
+            },
+            {
+              hull: "freshdesk/domains",
+              service: "domains",
+              overwrite: true,
+            },
+            {
+              hull: "freshdesk/account_tier",
+              service: "account_tier",
+              overwrite: true,
+            },
+            {
+              hull: "freshdesk/foo",
+              service: undefined,
+              overwrite: true,
+            },
+          ],
+          account_filter_inbound_require_domain: false,
+          contact_lookup_attribute_email: "email",
+        },
+        logger: console,
+        contactFields: ApiResponseContactFields,
+        companyFields: ApiResponseCompanyFields,
+      };
+
+      const expected: IncomingData<
+        IHullAccountClaims,
+        IHullAccountAttributes
+      > = {
+        objectType: "account",
+        ident: {
+          domain: ApiCreateCompanyResponse.domains[0],
+          anonymous_id: `freshdesk:${ApiCreateCompanyResponse.id}`,
+        },
+        attributes: {
+          "freshdesk/id": {
+            value: ApiCreateCompanyResponse.id,
+            operation: "setIfNull",
+          },
+          "freshdesk/domains": ApiCreateCompanyResponse.domains,
+          "freshdesk/name": ApiCreateCompanyResponse.name,
+          "freshdesk/account_tier": ApiCreateCompanyResponse.account_tier,
+        },
+      };
+
+      const util = new MappingUtil(options);
+      const actual = util.mapServiceObjectToHullAccount(
+        ApiCreateCompanyResponse,
+      );
 
       expect(actual).toEqual(expected);
     });
