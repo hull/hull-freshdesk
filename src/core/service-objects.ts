@@ -116,3 +116,9 @@ export interface IncomingData<T, U> {
   properties?: IHullUserEventProps;
   context?: IHullUserEventContext;
 }
+
+export interface OutgoingOperationEnvelopesFiltered<T, U> {
+  inserts: OutgoingOperationEnvelope<T, U>[];
+  updates: OutgoingOperationEnvelope<T, U>[];
+  skips: OutgoingOperationEnvelope<T, U>[];
+}
