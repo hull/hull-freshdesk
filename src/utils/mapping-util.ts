@@ -32,6 +32,8 @@ export class MappingUtil {
     this.logger = options.logger;
     this.contactFields = options.contactFields;
     this.companyFields = options.companyFields;
+
+    console.log(this.privateSettings);
   }
 
   public mapHullUserToServiceObject(

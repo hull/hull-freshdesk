@@ -5,9 +5,17 @@ import _ from "lodash";
 import IHullUserUpdateMessage from "../types/user-update-message";
 import { ConnectorStatusResponse } from "../types/connector-status";
 import IHullAccountUpdateMessage from "../types/account-update-message";
-import { FreshdeskObjectMetaType } from "./service-objects";
+import {
+  FreshdeskObjectMetaType,
+  OutgoingOperationEnvelopesFiltered,
+  FreshdeskContactCreateUpdate,
+  OutgoingOperationEnvelope,
+} from "./service-objects";
 import { FieldsSchema } from "../types/fields-schema";
 import { ServiceClient } from "./service-client";
+import { FilterUtil } from "../utils/filter-util";
+import asyncForEach from "../utils/async-foreach";
+import { MappingUtil } from "../utils/mapping-util";
 
 export class SyncAgent {
   readonly hullClient: IHullClient;
@@ -38,13 +46,14 @@ export class SyncAgent {
       connector,
       "private_settings",
     ) as PrivateSettings;
-    container.register("privateSettings", asValue(this.privateSettings));
-    container.register("apiKey", asValue(this.privateSettings.api_key));
-    container.register("domain", asValue(this.privateSettings.domain));
-    container.register(
+    this.diContainer.register("privateSettings", asValue(this.privateSettings));
+    this.diContainer.register("apiKey", asValue(this.privateSettings.api_key));
+    this.diContainer.register("domain", asValue(this.privateSettings.domain));
+    this.diContainer.register(
       "serviceClient",
       asClass(ServiceClient, { lifetime: Lifetime.SINGLETON }),
     );
+    this.diContainer.register("filterUtil", asClass(FilterUtil));
   }
 
   /**
@@ -59,6 +68,90 @@ export class SyncAgent {
     messages: IHullUserUpdateMessage[],
     isBatch = false,
   ): Promise<unknown> {
+    if (
+      _.isNil(this.privateSettings.api_key) ||
+      _.isNil(this.privateSettings.domain)
+    ) {
+      return Promise.resolve(false);
+    }
+
+    const filterUtil = this.diContainer.resolve<FilterUtil>("filterUtil");
+
+    const envelopesFiltered = filterUtil.filterUserMessagesInitial(messages);
+    console.log(envelopesFiltered);
+    envelopesFiltered.skips.forEach((envelope) => {
+      this.hullClient
+        .asUser(envelope.message.user)
+        .logger.info("outgoing.user.skip", { details: envelope.notes });
+    });
+
+    if (
+      envelopesFiltered.inserts.length === 0 &&
+      envelopesFiltered.updates.length === 0
+    ) {
+      return Promise.resolve(true);
+    }
+
+    const serviceClient = this.diContainer.resolve<ServiceClient>(
+      "serviceClient",
+    );
+    const contactFieldsResponse = await serviceClient.listContactFields();
+    const companyFieldsResponse = await serviceClient.listCompanyFields();
+    this.diContainer.register(
+      "contactFields",
+      asValue(contactFieldsResponse.data),
+    );
+    this.diContainer.register(
+      "companyFields",
+      asValue(companyFieldsResponse.data),
+    );
+    this.diContainer.register("mappingUtil", asClass(MappingUtil));
+
+    if (envelopesFiltered.inserts.length > 0) {
+      const mappingUtil = this.diContainer.resolve<MappingUtil>("mappingUtil");
+      console.log(">>> Mapping Util", mappingUtil);
+      envelopesFiltered.inserts = _.map(
+        envelopesFiltered.inserts,
+        (envelope) => {
+          return mappingUtil.mapHullUserToServiceObject(envelope);
+        },
+      );
+      await asyncForEach(
+        envelopesFiltered.inserts,
+        async (
+          op: OutgoingOperationEnvelope<
+            IHullUserUpdateMessage,
+            FreshdeskContactCreateUpdate
+          >,
+        ) => {
+          if (op.serviceObject !== undefined) {
+            const createResult = await serviceClient.createContact(
+              op.serviceObject,
+            );
+            if (createResult.success && createResult.data !== undefined) {
+              const hullInfo = mappingUtil.mapServiceObjectToHullUser(
+                createResult.data,
+              );
+              const userIdent = {
+                ...hullInfo.ident,
+                id: op.message.user.id,
+              };
+              await this.hullClient
+                .asUser(userIdent)
+                .traits(hullInfo.attributes);
+              this.hullClient
+                .asUser(userIdent)
+                .logger.info("outgoing.user.success", {
+                  data: op.serviceObject,
+                  operation: op.operation,
+                  details: op.notes,
+                });
+            }
+          }
+        },
+      );
+    }
+
     return Promise.resolve(true);
   }
 

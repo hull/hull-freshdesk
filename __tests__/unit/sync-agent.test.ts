@@ -66,7 +66,7 @@ describe("SyncAgent", () => {
   });
 
   describe("sendUserMessages()", () => {
-    it("should return true", async () => {
+    it("should return false", async () => {
       const agent = new SyncAgent(
         ctxMock.client,
         ctxMock.connector,
@@ -76,7 +76,7 @@ describe("SyncAgent", () => {
 
       const actual = await agent.sendUserMessages([]);
 
-      expect(actual).toBeTruthy();
+      expect(actual).toBeFalsy();
     });
   });
 
