@@ -145,7 +145,6 @@
       "properties": [
         "private_settings.contact_synchronized_segments",
         "private_settings.contact_lookup_attribute_email",
-        "private_settings.contact_lookup_attribute_unique_external_id",
         "private_settings.contact_attributes_outbound",
         "private_settings.contact_attributes_inbound"
       ]
