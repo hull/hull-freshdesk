@@ -118,7 +118,6 @@ export class SyncAgent {
 
     if (envelopesFiltered.inserts.length > 0) {
       const mappingUtil = this.diContainer.resolve<MappingUtil>("mappingUtil");
-      console.log(">>> Mapping Util", mappingUtil);
       envelopesFiltered.inserts = _.map(
         envelopesFiltered.inserts,
         (envelope) => {

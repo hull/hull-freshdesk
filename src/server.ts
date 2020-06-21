@@ -7,6 +7,7 @@ import cors from "cors";
 import _ from "lodash";
 import { ClientOpts } from "redis";
 import { ConnectorRedisClient } from "./utils/redis-client";
+import { CachingUtil } from "./utils/caching-util";
 
 export const server = (app: Application): Application => {
   // DI Container
@@ -68,6 +69,7 @@ export const server = (app: Application): Application => {
     redisClient: asClass(ConnectorRedisClient).singleton(),
     redisClientOpts: asValue(redisClientOpts),
     logger: asValue(globalLogger),
+    cachingUtil: asClass(CachingUtil).singleton(),
   });
 
   // Set the view engine to ejs
