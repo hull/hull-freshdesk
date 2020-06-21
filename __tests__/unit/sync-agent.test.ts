@@ -118,7 +118,6 @@ describe("SyncAgent", () => {
         account_lookup_attribute_domain: "domain",
         api_key: API_KEY,
         contact_lookup_attribute_email: "email",
-        contact_lookup_attribute_unique_external_id: "external_id",
         domain: API_DOMAIN,
       };
 
@@ -185,7 +184,6 @@ describe("SyncAgent", () => {
         contact_synchronized_segments: [],
         account_lookup_attribute_domain: "domain",
         contact_lookup_attribute_email: "email",
-        contact_lookup_attribute_unique_external_id: "external_id",
         domain: API_DOMAIN,
       };
 
@@ -223,7 +221,6 @@ describe("SyncAgent", () => {
         contact_synchronized_segments: [],
         account_lookup_attribute_domain: "domain",
         contact_lookup_attribute_email: "email",
-        contact_lookup_attribute_unique_external_id: "external_id",
       };
 
       const ctx = {
@@ -259,7 +256,6 @@ describe("SyncAgent", () => {
         contact_attributes_outbound: [],
         contact_synchronized_segments: [],
         contact_lookup_attribute_email: "email",
-        contact_lookup_attribute_unique_external_id: "external_id",
         domain: API_DOMAIN,
       };
 
@@ -296,7 +292,7 @@ describe("SyncAgent", () => {
         contact_attributes_outbound: [],
         contact_synchronized_segments: [],
         account_lookup_attribute_domain: "domain",
-        contact_lookup_attribute_unique_external_id: "external_id",
+
         domain: API_DOMAIN,
       };
 
@@ -346,7 +342,6 @@ describe("SyncAgent", () => {
         account_lookup_attribute_domain: "domain",
         api_key: API_KEY,
         contact_lookup_attribute_email: "email",
-        contact_lookup_attribute_unique_external_id: "external_id",
         domain: API_DOMAIN,
       };
 
@@ -422,7 +417,6 @@ describe("SyncAgent", () => {
         account_lookup_attribute_domain: "domain",
         api_key: API_KEY,
         contact_lookup_attribute_email: "email",
-        contact_lookup_attribute_unique_external_id: "external_id",
         domain: API_DOMAIN,
       };
 
@@ -485,7 +479,6 @@ describe("SyncAgent", () => {
         account_lookup_attribute_domain: "domain",
         api_key: API_KEY,
         contact_lookup_attribute_email: "email",
-        contact_lookup_attribute_unique_external_id: "external_id",
         domain: API_DOMAIN,
       };
 

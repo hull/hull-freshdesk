@@ -16,8 +16,7 @@
   "picture": "picture.png",
   "ui": false,
   "settings": [],
-  "private_settings": [
-    {
+  "private_settings": [{
       "name": "domain",
       "type": "string",
       "title": "Freshdesk Sub-Domain",
@@ -44,14 +43,6 @@
       "type": "string",
       "format": "trait",
       "default": "email"
-    },
-    {
-      "name": "contact_lookup_attribute_unique_external_id",
-      "title": "Unique External ID Lookup",
-      "description": "Define which attribute on the Hull User Profile shall be used to lookup Contacts in Freshdesk by their unique external id.",
-      "type": "string",
-      "format": "trait",
-      "default": "external_id"
     },
     {
       "name": "contact_attributes_outbound",
@@ -135,20 +126,15 @@
       }
     }
   ],
-  "schedules": [
-    {
-      "url": "/status",
-      "type": "interval",
-      "value": "30"
-    }
-  ],
-  "subscriptions": [
-    {
-      "url": "/smart-notifier"
-    }
-  ],
-  "settings_sections": [
-    {
+  "schedules": [{
+    "url": "/status",
+    "type": "interval",
+    "value": "30"
+  }],
+  "subscriptions": [{
+    "url": "/smart-notifier"
+  }],
+  "settings_sections": [{
       "title": "Freshdesk Credentials",
       "description": "Authorize the Connector to access the Freshdesk API on your behalf using your personal access token.",
       "properties": ["private_settings.domain", "private_settings.api_key"]
