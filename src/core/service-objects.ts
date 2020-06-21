@@ -122,3 +122,56 @@ export interface OutgoingOperationEnvelopesFiltered<T, U> {
   updates: OutgoingOperationEnvelope<T, U>[];
   skips: OutgoingOperationEnvelope<T, U>[];
 }
+
+export interface FreshdeskAgentContact {
+  active: boolean;
+  email: string;
+  job_title?: string | null;
+  language: string;
+  last_login_at?: string | null;
+  mobile?: string | null;
+  name: string;
+  phone?: string | number | null;
+  time_zone: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface FreshdeskAgent {
+  available: boolean;
+  occasional: boolean;
+  signature?: string | null;
+  ticket_scope: number;
+  skill_ids?: number[] | null;
+  group_ids?: number[] | null;
+  role_ids?: number[] | null;
+  id: number;
+  created_at: string;
+  updated_at: string;
+  available_since?: string | number | null;
+  type: string;
+  contact: FreshdeskAgentContact;
+}
+
+export interface FreshdeskErrorResponseField {
+  field?: string | null;
+  message?: string | null;
+  code?: string | null;
+}
+
+export interface FreshdeskErrorDetails {
+  description?: string | null;
+  errors: FreshdeskErrorResponseField[];
+}
+
+export type ApiMethod = "query" | "insert" | "update" | "delete";
+
+export interface ApiResultObject<T, U> {
+  endpoint: string;
+  method: ApiMethod;
+  record: T | undefined;
+  data: U;
+  success: boolean;
+  error?: string | string[];
+  errorDetails?: FreshdeskErrorDetails;
+}

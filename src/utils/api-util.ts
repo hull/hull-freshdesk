@@ -1,6 +1,6 @@
 import _ from "lodash";
 import { AxiosError, AxiosResponse } from "axios";
-import { ApiResultObject, ApiMethod } from "../types/api-result";
+import { ApiResultObject, ApiMethod } from "../core/service-objects";
 
 export class ApiUtil {
   /**
@@ -33,7 +33,7 @@ export class ApiUtil {
     };
 
     if (axiosResponse !== undefined || error.isAxiosError === true) {
-      apiResult.data = axiosResponse ? axiosResponse.data : undefined;
+      apiResult.errorDetails = axiosResponse ? axiosResponse.data : undefined;
       apiResult.error = _.compact([
         error.message,
         axiosResponse ? axiosResponse.statusText : null,

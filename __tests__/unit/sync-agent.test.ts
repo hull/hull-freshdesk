@@ -8,6 +8,16 @@ import ApiResponseListAllContactFields from "../_data/api__list_all_contact_fiel
 import ApiResponseListAllCompanyFields from "../_data/api__list_all_company_fields.json";
 import { FieldsSchema } from "../../src/types/fields-schema";
 import nock from "nock";
+import { PrivateSettings } from "../../src/types/private-settings";
+import {
+  STATUS_SETUPREQUIRED_NOAPIKEY,
+  STATUS_SETUPREQUIRED_NODOMAIN,
+  STATUS_SETUPREQUIRED_NOLOOKUPACCTDOMAIN,
+  STATUS_SETUPREQUIRED_NOLOOKUPCONTACTEMAIL,
+  STATUS_WARN_FIELDDOESNTEXIST,
+  STATUS_ERROR_AUTHN,
+} from "../../src/core/messages";
+import ApiResponseCurrentlyAuthenticatedAgent from "../_data/api_me.json";
 
 describe("SyncAgent", () => {
   let ctxMock: ContextMock;
@@ -96,7 +106,95 @@ describe("SyncAgent", () => {
   });
 
   describe("determineConnectorStatus()", () => {
-    it("should return true", async () => {
+    it("should return status 'ok' with no messages if properly configured", async () => {
+      const privateSettings: PrivateSettings = {
+        account_attributes_inbound: [],
+        account_attributes_outbound: [],
+        account_filter_inbound_require_domain: false,
+        account_synchronized_segments: [],
+        contact_attributes_inbound: [],
+        contact_attributes_outbound: [],
+        contact_synchronized_segments: [],
+        account_lookup_attribute_domain: "domain",
+        api_key: API_KEY,
+        contact_lookup_attribute_email: "email",
+        contact_lookup_attribute_unique_external_id: "external_id",
+        domain: API_DOMAIN,
+      };
+
+      const ctx = {
+        ...ctxMock,
+      };
+
+      _.set(ctx, "connector.private_settings", privateSettings);
+
+      const agent = new SyncAgent(
+        ctxMock.client,
+        ctxMock.connector,
+        ctxMock.metric,
+        container,
+      );
+
+      nock(API_BASE_URL)
+        .get(`/api/v2/agents/me`)
+        .matchHeader(
+          "authorization",
+          `Basic ${Buffer.from(`${API_KEY}:X`, "utf-8").toString("base64")}`,
+        )
+        .reply(200, ApiResponseCurrentlyAuthenticatedAgent, {
+          "Content-Type": "application/json",
+        });
+
+      nock(`https://${API_DOMAIN}.freshdesk.com`)
+        .get("/api/v2/contact_fields")
+        .matchHeader(
+          "authorization",
+          `Basic ${Buffer.from(`${API_KEY}:X`, "utf-8").toString("base64")}`,
+        )
+        .reply(200, ApiResponseListAllContactFields, {
+          "Content-Type": "application/json",
+        });
+
+      nock(`https://${API_DOMAIN}.freshdesk.com`)
+        .get("/api/v2/company_fields")
+        .matchHeader(
+          "authorization",
+          `Basic ${Buffer.from(`${API_KEY}:X`, "utf-8").toString("base64")}`,
+        )
+        .reply(200, ApiResponseListAllCompanyFields, {
+          "Content-Type": "application/json",
+        });
+
+      const actual = await agent.determineConnectorStatus();
+      const expected: ConnectorStatusResponse = {
+        status: "ok",
+        messages: [],
+      };
+
+      expect(actual).toEqual(expected);
+    });
+
+    it("should return status 'setupRequired' with messages if api_key is missing", async () => {
+      const privateSettings: PrivateSettings = {
+        account_attributes_inbound: [],
+        account_attributes_outbound: [],
+        account_filter_inbound_require_domain: false,
+        account_synchronized_segments: [],
+        contact_attributes_inbound: [],
+        contact_attributes_outbound: [],
+        contact_synchronized_segments: [],
+        account_lookup_attribute_domain: "domain",
+        contact_lookup_attribute_email: "email",
+        contact_lookup_attribute_unique_external_id: "external_id",
+        domain: API_DOMAIN,
+      };
+
+      const ctx = {
+        ...ctxMock,
+      };
+
+      _.set(ctx, "connector.private_settings", privateSettings);
+
       const agent = new SyncAgent(
         ctxMock.client,
         ctxMock.connector,
@@ -106,11 +204,317 @@ describe("SyncAgent", () => {
 
       const actual = await agent.determineConnectorStatus();
       const expected: ConnectorStatusResponse = {
-        status: "ok",
-        messages: [],
+        status: "setupRequired",
+        messages: [STATUS_SETUPREQUIRED_NOAPIKEY],
       };
 
       expect(actual).toEqual(expected);
+    });
+
+    it("should return status 'setupRequired' with messages if domain is missing", async () => {
+      const privateSettings: PrivateSettings = {
+        account_attributes_inbound: [],
+        account_attributes_outbound: [],
+        account_filter_inbound_require_domain: false,
+        account_synchronized_segments: [],
+        api_key: API_KEY,
+        contact_attributes_inbound: [],
+        contact_attributes_outbound: [],
+        contact_synchronized_segments: [],
+        account_lookup_attribute_domain: "domain",
+        contact_lookup_attribute_email: "email",
+        contact_lookup_attribute_unique_external_id: "external_id",
+      };
+
+      const ctx = {
+        ...ctxMock,
+      };
+
+      _.set(ctx, "connector.private_settings", privateSettings);
+
+      const agent = new SyncAgent(
+        ctxMock.client,
+        ctxMock.connector,
+        ctxMock.metric,
+        container,
+      );
+
+      const actual = await agent.determineConnectorStatus();
+      const expected: ConnectorStatusResponse = {
+        status: "setupRequired",
+        messages: [STATUS_SETUPREQUIRED_NODOMAIN],
+      };
+
+      expect(actual).toEqual(expected);
+    });
+
+    it("should return status 'setupRequired' with messages if account_lookup_attribute_domain is missing", async () => {
+      const privateSettings: PrivateSettings = {
+        account_attributes_inbound: [],
+        account_attributes_outbound: [],
+        account_filter_inbound_require_domain: false,
+        account_synchronized_segments: [],
+        api_key: API_KEY,
+        contact_attributes_inbound: [],
+        contact_attributes_outbound: [],
+        contact_synchronized_segments: [],
+        contact_lookup_attribute_email: "email",
+        contact_lookup_attribute_unique_external_id: "external_id",
+        domain: API_DOMAIN,
+      };
+
+      const ctx = {
+        ...ctxMock,
+      };
+
+      _.set(ctx, "connector.private_settings", privateSettings);
+
+      const agent = new SyncAgent(
+        ctxMock.client,
+        ctxMock.connector,
+        ctxMock.metric,
+        container,
+      );
+
+      const actual = await agent.determineConnectorStatus();
+      const expected: ConnectorStatusResponse = {
+        status: "setupRequired",
+        messages: [STATUS_SETUPREQUIRED_NOLOOKUPACCTDOMAIN],
+      };
+
+      expect(actual).toEqual(expected);
+    });
+
+    it("should return status 'setupRequired' with messages if contact_lookup_attribute_email is missing", async () => {
+      const privateSettings: PrivateSettings = {
+        account_attributes_inbound: [],
+        account_attributes_outbound: [],
+        account_filter_inbound_require_domain: false,
+        account_synchronized_segments: [],
+        api_key: API_KEY,
+        contact_attributes_inbound: [],
+        contact_attributes_outbound: [],
+        contact_synchronized_segments: [],
+        account_lookup_attribute_domain: "domain",
+        contact_lookup_attribute_unique_external_id: "external_id",
+        domain: API_DOMAIN,
+      };
+
+      const ctx = {
+        ...ctxMock,
+      };
+
+      _.set(ctx, "connector.private_settings", privateSettings);
+
+      const agent = new SyncAgent(
+        ctxMock.client,
+        ctxMock.connector,
+        ctxMock.metric,
+        container,
+      );
+
+      const actual = await agent.determineConnectorStatus();
+      const expected: ConnectorStatusResponse = {
+        status: "setupRequired",
+        messages: [STATUS_SETUPREQUIRED_NOLOOKUPCONTACTEMAIL],
+      };
+
+      expect(actual).toEqual(expected);
+    });
+
+    it("should return status 'warning' with messages if any attribute mapping is invalid", async () => {
+      const privateSettings: PrivateSettings = {
+        account_attributes_inbound: [],
+        account_attributes_outbound: [
+          {
+            hull: "test/foo",
+            service: "foo",
+            overwrite: true,
+          },
+        ],
+        account_filter_inbound_require_domain: false,
+        account_synchronized_segments: [],
+        contact_attributes_inbound: [
+          {
+            hull: "traits_freshdesk/baz",
+            service: "baz",
+            overwrite: true,
+          },
+        ],
+        contact_attributes_outbound: [],
+        contact_synchronized_segments: [],
+        account_lookup_attribute_domain: "domain",
+        api_key: API_KEY,
+        contact_lookup_attribute_email: "email",
+        contact_lookup_attribute_unique_external_id: "external_id",
+        domain: API_DOMAIN,
+      };
+
+      const ctx = {
+        ...ctxMock,
+      };
+
+      _.set(ctx, "connector.private_settings", privateSettings);
+
+      const agent = new SyncAgent(
+        ctxMock.client,
+        ctxMock.connector,
+        ctxMock.metric,
+        container,
+      );
+
+      nock(API_BASE_URL)
+        .get(`/api/v2/agents/me`)
+        .matchHeader(
+          "authorization",
+          `Basic ${Buffer.from(`${API_KEY}:X`, "utf-8").toString("base64")}`,
+        )
+        .reply(200, ApiResponseCurrentlyAuthenticatedAgent, {
+          "Content-Type": "application/json",
+        });
+
+      nock(`https://${API_DOMAIN}.freshdesk.com`)
+        .get("/api/v2/contact_fields")
+        .matchHeader(
+          "authorization",
+          `Basic ${Buffer.from(`${API_KEY}:X`, "utf-8").toString("base64")}`,
+        )
+        .reply(200, ApiResponseListAllContactFields, {
+          "Content-Type": "application/json",
+        });
+
+      nock(`https://${API_DOMAIN}.freshdesk.com`)
+        .get("/api/v2/company_fields")
+        .matchHeader(
+          "authorization",
+          `Basic ${Buffer.from(`${API_KEY}:X`, "utf-8").toString("base64")}`,
+        )
+        .reply(200, ApiResponseListAllCompanyFields, {
+          "Content-Type": "application/json",
+        });
+
+      const actual = await agent.determineConnectorStatus();
+
+      expect(actual.status).toEqual("warning");
+      expect(actual.messages).toContain(
+        STATUS_WARN_FIELDDOESNTEXIST("foo", "Companies > Outgoing Attributes"),
+      );
+      expect(actual.messages).toContain(
+        STATUS_WARN_FIELDDOESNTEXIST("baz", "Contacts > Incoming Fields"),
+      );
+    });
+
+    it("should return status 'error' with messages if Freshdesk API returns 401", async () => {
+      const privateSettings: PrivateSettings = {
+        account_attributes_inbound: [],
+        account_attributes_outbound: [],
+        account_filter_inbound_require_domain: false,
+        account_synchronized_segments: [],
+        contact_attributes_inbound: [
+          {
+            hull: "traits_freshdesk/baz",
+            service: "baz",
+            overwrite: true,
+          },
+        ],
+        contact_attributes_outbound: [],
+        contact_synchronized_segments: [],
+        account_lookup_attribute_domain: "domain",
+        api_key: API_KEY,
+        contact_lookup_attribute_email: "email",
+        contact_lookup_attribute_unique_external_id: "external_id",
+        domain: API_DOMAIN,
+      };
+
+      const ctx = {
+        ...ctxMock,
+      };
+
+      _.set(ctx, "connector.private_settings", privateSettings);
+
+      const agent = new SyncAgent(
+        ctxMock.client,
+        ctxMock.connector,
+        ctxMock.metric,
+        container,
+      );
+
+      const errorData = {
+        description: "Authentication Failure",
+        errors: [
+          {
+            code: "invalid_credentials",
+            message: "Incorrect or missing API credentials.",
+          },
+        ],
+      };
+      nock(API_BASE_URL)
+        .get(`/api/v2/agents/me`)
+        .matchHeader(
+          "authorization",
+          `Basic ${Buffer.from(`${API_KEY}:X`, "utf-8").toString("base64")}`,
+        )
+        .reply(401, errorData);
+
+      const errorDetails = `Description: '${
+        errorData.description
+      }' Errors: ${errorData.errors
+        .map((e) => `${e.message} (code: ${e.code})`)
+        .join(" ")}`;
+      const actual = await agent.determineConnectorStatus();
+
+      expect(actual.status).toEqual("error");
+      expect(actual.messages).toContain(STATUS_ERROR_AUTHN(errorDetails));
+    });
+
+    it("should return status 'error' with messages if Freshdesk API returns error code without details", async () => {
+      const privateSettings: PrivateSettings = {
+        account_attributes_inbound: [],
+        account_attributes_outbound: [],
+        account_filter_inbound_require_domain: false,
+        account_synchronized_segments: [],
+        contact_attributes_inbound: [
+          {
+            hull: "traits_freshdesk/baz",
+            service: "baz",
+            overwrite: true,
+          },
+        ],
+        contact_attributes_outbound: [],
+        contact_synchronized_segments: [],
+        account_lookup_attribute_domain: "domain",
+        api_key: API_KEY,
+        contact_lookup_attribute_email: "email",
+        contact_lookup_attribute_unique_external_id: "external_id",
+        domain: API_DOMAIN,
+      };
+
+      const ctx = {
+        ...ctxMock,
+      };
+
+      _.set(ctx, "connector.private_settings", privateSettings);
+
+      const agent = new SyncAgent(
+        ctxMock.client,
+        ctxMock.connector,
+        ctxMock.metric,
+        container,
+      );
+
+      nock(API_BASE_URL)
+        .get(`/api/v2/agents/me`)
+        .matchHeader(
+          "authorization",
+          `Basic ${Buffer.from(`${API_KEY}:X`, "utf-8").toString("base64")}`,
+        )
+        .reply(401);
+
+      const errorDetails = `Request failed with status code 401`;
+      const actual = await agent.determineConnectorStatus();
+
+      expect(actual.status).toEqual("error");
+      expect(actual.messages).toContain(STATUS_ERROR_AUTHN(errorDetails));
     });
   });
 

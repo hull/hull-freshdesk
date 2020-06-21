@@ -1,5 +1,5 @@
 import axios, { AxiosRequestConfig } from "axios";
-import { ApiResultObject, ApiMethod } from "../types/api-result";
+import { ApiResultObject, ApiMethod } from "../core/service-objects";
 import { ApiUtil } from "../utils/api-util";
 import {
   FreshdeskContactField,
@@ -9,6 +9,7 @@ import {
   FreshdeskFilterResult,
   FreshdeskCompanyCreateOrUpdate,
   FreshdeskCompany,
+  FreshdeskAgent,
 } from "./service-objects";
 import { Logger } from "winston";
 import { logger } from "hull";
@@ -227,6 +228,37 @@ export class ServiceClient {
         axiosResponse,
       );
     } catch (error) {
+      return ApiUtil.handleApiResultError(url, method, undefined, error);
+    }
+  }
+
+  public async getCurrentlyAuthenticatedAgent(): Promise<
+    ApiResultObject<unknown, FreshdeskAgent | undefined>
+  > {
+    const url = `${this.apiBaseUrl}/api/v2/agents/me`;
+    const method: ApiMethod = "query";
+    const axiosConfig = this.getAxiosConfig();
+
+    try {
+      logger.debug(
+        "ServiceClient.getCurrentlyAuthenticatedAgent: Executing API Call...",
+        url,
+        axiosConfig,
+      );
+      const axiosResponse = await axios.get<FreshdeskAgent>(url, axiosConfig);
+      return ApiUtil.handleApiResultSuccess(
+        url,
+        method,
+        undefined,
+        axiosResponse,
+      );
+    } catch (error) {
+      logger.error(
+        "ServiceClient.getCurrentlyAuthenticatedAgent: Failed API Call",
+        url,
+        axiosConfig,
+        error,
+      );
       return ApiUtil.handleApiResultError(url, method, undefined, error);
     }
   }

@@ -16,6 +16,14 @@ import { ServiceClient } from "./service-client";
 import { FilterUtil } from "../utils/filter-util";
 import asyncForEach from "../utils/async-foreach";
 import { MappingUtil } from "../utils/mapping-util";
+import {
+  STATUS_SETUPREQUIRED_NOAPIKEY,
+  STATUS_SETUPREQUIRED_NODOMAIN,
+  STATUS_SETUPREQUIRED_NOLOOKUPACCTDOMAIN,
+  STATUS_SETUPREQUIRED_NOLOOKUPCONTACTEMAIL,
+  STATUS_ERROR_AUTHN,
+} from "./messages";
+import { ValidationUtil } from "../utils/validation-util";
 
 export class SyncAgent {
   readonly hullClient: IHullClient;
@@ -54,6 +62,7 @@ export class SyncAgent {
       asClass(ServiceClient, { lifetime: Lifetime.SINGLETON }),
     );
     this.diContainer.register("filterUtil", asClass(FilterUtil));
+    this.diContainer.register("validationUtil", asClass(ValidationUtil));
   }
 
   /**
@@ -177,12 +186,93 @@ export class SyncAgent {
    * @memberof SyncAgent
    */
   public async determineConnectorStatus(): Promise<ConnectorStatusResponse> {
-    const status: ConnectorStatusResponse = {
+    const statusResult: ConnectorStatusResponse = {
       status: "ok",
       messages: [],
     };
 
-    return Promise.resolve(status);
+    // Perfom checks to verify setup is complete
+    if (_.isNil(this.privateSettings.api_key)) {
+      statusResult.status = "setupRequired";
+      statusResult.messages.push(STATUS_SETUPREQUIRED_NOAPIKEY);
+    }
+
+    if (_.isNil(this.privateSettings.domain)) {
+      statusResult.status = "setupRequired";
+      statusResult.messages.push(STATUS_SETUPREQUIRED_NODOMAIN);
+    }
+
+    if (_.isNil(this.privateSettings.account_lookup_attribute_domain)) {
+      statusResult.status = "setupRequired";
+      statusResult.messages.push(STATUS_SETUPREQUIRED_NOLOOKUPACCTDOMAIN);
+    }
+
+    if (_.isNil(this.privateSettings.contact_lookup_attribute_email)) {
+      statusResult.status = "setupRequired";
+      statusResult.messages.push(STATUS_SETUPREQUIRED_NOLOOKUPCONTACTEMAIL);
+    }
+
+    // Perform checks to verify that we can establish a connection to the Freshdesk API
+    if (statusResult.status !== "setupRequired") {
+      const serviceClient = this.diContainer.resolve<ServiceClient>(
+        "serviceClient",
+      );
+
+      const agentResult = await serviceClient.getCurrentlyAuthenticatedAgent();
+      if (agentResult.success === false) {
+        let errorDetails = "No further details from API response.";
+
+        if (agentResult.errorDetails) {
+          errorDetails = `Description: '${
+            agentResult.errorDetails.description
+          }' Errors: ${agentResult.errorDetails.errors
+            .map((e) => `${e.message} (code: ${e.code})`)
+            .join(" ")}`;
+        } else if (agentResult.error) {
+          errorDetails = _.isArray(agentResult.error)
+            ? agentResult.error.join(" ")
+            : agentResult.error;
+        }
+
+        statusResult.status = "error";
+        statusResult.messages.push(STATUS_ERROR_AUTHN(errorDetails));
+      }
+    }
+
+    // Perform checks to validate the fields for contacts and companies
+    if (statusResult.status === "ok") {
+      const validationUtil = this.diContainer.resolve<ValidationUtil>(
+        "validationUtil",
+      );
+      const serviceClient = this.diContainer.resolve<ServiceClient>(
+        "serviceClient",
+      );
+      const contactFieldsResult = await serviceClient.listContactFields();
+
+      if (contactFieldsResult.success === true && contactFieldsResult.data) {
+        const contactFieldErrors = validationUtil.validateContactFields(
+          contactFieldsResult.data,
+        );
+        if (contactFieldErrors.length !== 0) {
+          statusResult.messages.push(...contactFieldErrors);
+          statusResult.status = "warning";
+        }
+      }
+
+      const companyFieldsResult = await serviceClient.listCompanyFields();
+
+      if (companyFieldsResult.success === true && companyFieldsResult.data) {
+        const companyFieldErrors = validationUtil.validateCompanyFields(
+          companyFieldsResult.data,
+        );
+        if (companyFieldErrors.length !== 0) {
+          statusResult.messages.push(...companyFieldErrors);
+          statusResult.status = "warning";
+        }
+      }
+    }
+
+    return Promise.resolve(statusResult);
   }
 
   /**
@@ -228,9 +318,6 @@ export class SyncAgent {
               fieldsSchema.error = _.isArray(fieldsResultCompany.error)
                 ? fieldsResultCompany.error.join(" ").trim()
                 : fieldsResultCompany.error;
-            } else {
-              fieldsSchema.error =
-                "Failed to fetch all company fields from Freshdesk API.";
             }
           }
           break;
@@ -249,9 +336,6 @@ export class SyncAgent {
               fieldsSchema.error = _.isArray(fieldsResult.error)
                 ? fieldsResult.error.join(" ").trim()
                 : fieldsResult.error;
-            } else {
-              fieldsSchema.error =
-                "Failed to fetch all contact fields from Freshdesk API.";
             }
           }
           break;

@@ -1,7 +1,7 @@
 import { ServiceClient } from "../../src/core/service-client";
 import nock from "nock";
 import ApiResponseListAllContactFields from "../_data/api__list_all_contact_fields.json";
-import { ApiResultObject } from "../../src/types/api-result";
+import { ApiResultObject } from "../../src/core/service-objects";
 import {
   FreshdeskContactField,
   FreshdeskCompanyField,
@@ -10,6 +10,7 @@ import {
   FreshdeskFilterResult,
   FreshdeskCompanyCreateOrUpdate,
   FreshdeskCompany,
+  FreshdeskAgent,
 } from "../../src/core/service-objects";
 import { API_BASE_URL, API_KEY, API_DOMAIN } from "../_helpers/constants";
 import ApiResponseListAllCompanyFields from "../_data/api__list_all_company_fields.json";
@@ -19,6 +20,7 @@ import ApiResponseFilterContacts from "../_data/api__filter_contacts.json";
 import ApiResponseCreateCompany from "../_data/api__create_company.json";
 import ApiResponseUpdateCompany from "../_data/api__update_company.json";
 import ApiResponseFilterCompanies from "../_data/api__filter_companies.json";
+import ApiResponseCurrentlyAuthenticatedAgent from "../_data/api_me.json";
 
 describe("ServiceClient", () => {
   beforeEach(() => {
@@ -608,6 +610,73 @@ describe("ServiceClient", () => {
         record: undefined,
         success: false,
         error: ["Some arbitrary error"],
+      };
+
+      expect(actual).toEqual(expected);
+    });
+  });
+
+  describe("getCurrentlyAuthenticatedAgent()", () => {
+    it("should return the currently authenticated agent on success", async () => {
+      nock(API_BASE_URL)
+        .get(`/api/v2/agents/me`)
+        .matchHeader(
+          "authorization",
+          `Basic ${Buffer.from(`${API_KEY}:X`, "utf-8").toString("base64")}`,
+        )
+        .reply(200, ApiResponseCurrentlyAuthenticatedAgent, {
+          "Content-Type": "application/json",
+        });
+
+      const client = new ServiceClient({
+        apiKey: API_KEY,
+        domain: API_DOMAIN,
+        logger: console,
+      });
+      const actual = await client.getCurrentlyAuthenticatedAgent();
+      const expected: ApiResultObject<unknown, FreshdeskAgent | undefined> = {
+        data: ApiResponseCurrentlyAuthenticatedAgent,
+        endpoint: `${API_BASE_URL}/api/v2/agents/me`,
+        method: "query",
+        record: undefined,
+        success: true,
+      };
+
+      expect(actual).toEqual(expected);
+    });
+
+    it("should return an error result and not throw if API responds with status 401", async () => {
+      const errorData = {
+        description: "Authentication Failure",
+        errors: [
+          {
+            code: "invalid_credentials",
+            message: "Incorrect or missing API credentials.",
+          },
+        ],
+      };
+      nock(API_BASE_URL)
+        .get(`/api/v2/agents/me`)
+        .matchHeader(
+          "authorization",
+          `Basic ${Buffer.from(`${API_KEY}:X`, "utf-8").toString("base64")}`,
+        )
+        .reply(401, errorData);
+
+      const client = new ServiceClient({
+        apiKey: API_KEY,
+        domain: API_DOMAIN,
+        logger: console,
+      });
+      const actual = await client.getCurrentlyAuthenticatedAgent();
+      const expected: ApiResultObject<unknown, FreshdeskAgent | undefined> = {
+        data: undefined,
+        endpoint: `${API_BASE_URL}/api/v2/agents/me`,
+        method: "query",
+        record: undefined,
+        success: false,
+        error: ["Request failed with status code 401"],
+        errorDetails: errorData,
       };
 
       expect(actual).toEqual(expected);
