@@ -174,6 +174,7 @@ describe("FilterUtil", () => {
           return {
             message: msg,
             operation: "update",
+            serviceId: 432,
           };
         }),
         skips: [],
@@ -331,6 +332,7 @@ describe("FilterUtil", () => {
           return {
             message: msg,
             operation: "update",
+            serviceId: 999,
           };
         }),
         skips: [],
@@ -342,6 +344,442 @@ describe("FilterUtil", () => {
       );
 
       expect(actual).toEqual(expected);
+    });
+  });
+
+  describe("filterUserEnvelopesToReevaluateForUpdate()", () => {
+    it("should not change anything in the filtered results if no contacts have been found", () => {
+      const hullNotification = {
+        ...UserUpdateNotification,
+      };
+
+      const initialResult: OutgoingOperationEnvelopesFiltered<
+        IHullUserUpdateMessage,
+        FreshdeskContactCreateUpdate
+      > = {
+        inserts: _.map(hullNotification.messages, (msg) => {
+          return {
+            message: msg,
+            operation: "insert",
+            serviceObject: {
+              email: msg.user.email,
+              name: msg.user.name,
+            },
+          };
+        }),
+        updates: [],
+        skips: [],
+      };
+
+      const options = {
+        privateSettings: {
+          contact_synchronized_segments: ["test1234"],
+          contact_attributes_outbound: [],
+          contact_attributes_inbound: [],
+          account_synchronized_segments: [],
+          account_attributes_outbound: [],
+          account_attributes_inbound: [],
+          account_filter_inbound_require_domain: false,
+        },
+        logger: {
+          info: jest.fn(),
+          log: jest.fn(),
+          warn: jest.fn(),
+          debug: jest.fn(),
+          error: jest.fn(),
+        },
+      };
+
+      const util = new FilterUtil(options);
+      const actual = util.filterUserEnvelopesToReevaluateForUpdate(
+        initialResult,
+        [],
+      );
+      expect(actual).toEqual(initialResult);
+    });
+
+    it("should add envelopes with insert operation to update if matching contact has been found", () => {
+      const hullNotification = {
+        ...UserUpdateNotification,
+      };
+
+      const initialResult: OutgoingOperationEnvelopesFiltered<
+        IHullUserUpdateMessage,
+        FreshdeskContactCreateUpdate
+      > = {
+        inserts: _.map(hullNotification.messages, (msg) => {
+          return {
+            message: msg,
+            operation: "insert",
+            serviceObject: {
+              email: msg.user.email,
+              name: msg.user.name,
+            },
+          };
+        }),
+        updates: [],
+        skips: [],
+      };
+
+      const options = {
+        privateSettings: {
+          contact_synchronized_segments: ["test1234"],
+          contact_attributes_outbound: [],
+          contact_attributes_inbound: [],
+          account_synchronized_segments: [],
+          account_attributes_outbound: [],
+          account_attributes_inbound: [],
+          account_filter_inbound_require_domain: false,
+        },
+        logger: {
+          info: jest.fn(),
+          log: jest.fn(),
+          warn: jest.fn(),
+          debug: jest.fn(),
+          error: jest.fn(),
+        },
+      };
+
+      const util = new FilterUtil(options);
+      const actual = util.filterUserEnvelopesToReevaluateForUpdate(
+        initialResult,
+        _.map(hullNotification.messages, (msg) => {
+          return {
+            id: 1,
+            email: msg.user.email,
+            name: msg.user.name,
+            active: true,
+            created_at: "2015-08-28T09:08:16Z",
+            updated_at: "2015-08-28T09:08:16Z",
+          };
+        }),
+      );
+
+      const expected: OutgoingOperationEnvelopesFiltered<
+        IHullUserUpdateMessage,
+        FreshdeskContactCreateUpdate
+      > = {
+        inserts: [],
+        updates: _.map(hullNotification.messages, (msg) => {
+          return {
+            message: msg,
+            operation: "update",
+            serviceObject: {
+              email: msg.user.email,
+              name: msg.user.name,
+            },
+            serviceId: 1,
+          };
+        }),
+        skips: [],
+      };
+
+      expect(actual).toEqual(expected);
+    });
+
+    it("should not fail if no inserts are present in the initial result", () => {
+      const initialResult: OutgoingOperationEnvelopesFiltered<
+        IHullUserUpdateMessage,
+        FreshdeskContactCreateUpdate
+      > = {
+        inserts: [],
+        updates: [],
+        skips: [],
+      };
+
+      const options = {
+        privateSettings: {
+          contact_synchronized_segments: ["test1234"],
+          contact_attributes_outbound: [],
+          contact_attributes_inbound: [],
+          account_synchronized_segments: [],
+          account_attributes_outbound: [],
+          account_attributes_inbound: [],
+          account_filter_inbound_require_domain: false,
+        },
+        logger: {
+          info: jest.fn(),
+          log: jest.fn(),
+          warn: jest.fn(),
+          debug: jest.fn(),
+          error: jest.fn(),
+        },
+      };
+
+      const util = new FilterUtil(options);
+      const actual = util.filterUserEnvelopesToReevaluateForUpdate(
+        initialResult,
+        [],
+      );
+      expect(actual).toEqual(initialResult);
+    });
+
+    it("should not fail if no serviceObject is present in an envelope but remove it from inserts", () => {
+      const hullNotification = {
+        ...UserUpdateNotification,
+      };
+
+      const initialResult: OutgoingOperationEnvelopesFiltered<
+        IHullUserUpdateMessage,
+        FreshdeskContactCreateUpdate
+      > = {
+        inserts: _.map(hullNotification.messages, (msg) => {
+          return {
+            message: msg,
+            operation: "insert",
+          };
+        }),
+        updates: [],
+        skips: [],
+      };
+
+      const options = {
+        privateSettings: {
+          contact_synchronized_segments: ["test1234"],
+          contact_attributes_outbound: [],
+          contact_attributes_inbound: [],
+          account_synchronized_segments: [],
+          account_attributes_outbound: [],
+          account_attributes_inbound: [],
+          account_filter_inbound_require_domain: false,
+        },
+        logger: {
+          info: jest.fn(),
+          log: jest.fn(),
+          warn: jest.fn(),
+          debug: jest.fn(),
+          error: jest.fn(),
+        },
+      };
+
+      const util = new FilterUtil(options);
+      const actual = util.filterUserEnvelopesToReevaluateForUpdate(
+        initialResult,
+        [],
+      );
+      expect(actual).toEqual({
+        inserts: [],
+        updates: [],
+        skips: [],
+      });
+    });
+  });
+
+  describe("filterAccountEnvelopesToReevaluateForUpdate()", () => {
+    it("should not change anything in the filtered results if no companies have been found", () => {
+      const hullNotification = {
+        ...AccountUpdateNotification,
+      };
+
+      const initialResult: OutgoingOperationEnvelopesFiltered<
+        IHullAccountUpdateMessage,
+        FreshdeskCompanyCreateOrUpdate
+      > = {
+        inserts: _.map(hullNotification.messages, (msg) => {
+          return {
+            message: msg,
+            operation: "insert",
+            serviceObject: {
+              domains: [msg.account.domain],
+              name: msg.account.name,
+            },
+          };
+        }),
+        updates: [],
+        skips: [],
+      };
+
+      const options = {
+        privateSettings: {
+          contact_synchronized_segments: ["test1234"],
+          contact_attributes_outbound: [],
+          contact_attributes_inbound: [],
+          account_synchronized_segments: [],
+          account_attributes_outbound: [],
+          account_attributes_inbound: [],
+          account_filter_inbound_require_domain: false,
+        },
+        logger: {
+          info: jest.fn(),
+          log: jest.fn(),
+          warn: jest.fn(),
+          debug: jest.fn(),
+          error: jest.fn(),
+        },
+      };
+
+      const util = new FilterUtil(options);
+      const actual = util.filterAccountEnvelopesToReevaluateForUpdate(
+        initialResult,
+        [],
+      );
+      expect(actual).toEqual(initialResult);
+    });
+
+    it("should add envelopes with insert operation to update if matching company has been found", () => {
+      const hullNotification = {
+        ...AccountUpdateNotification,
+      };
+
+      const initialResult: OutgoingOperationEnvelopesFiltered<
+        IHullAccountUpdateMessage,
+        FreshdeskCompanyCreateOrUpdate
+      > = {
+        inserts: _.map(hullNotification.messages, (msg) => {
+          return {
+            message: msg,
+            operation: "insert",
+            serviceObject: {
+              domains: [msg.account.domain],
+              name: msg.account.name,
+            },
+          };
+        }),
+        updates: [],
+        skips: [],
+      };
+
+      const options = {
+        privateSettings: {
+          contact_synchronized_segments: ["test1234"],
+          contact_attributes_outbound: [],
+          contact_attributes_inbound: [],
+          account_synchronized_segments: [],
+          account_attributes_outbound: [],
+          account_attributes_inbound: [],
+          account_filter_inbound_require_domain: false,
+        },
+        logger: {
+          info: jest.fn(),
+          log: jest.fn(),
+          warn: jest.fn(),
+          debug: jest.fn(),
+          error: jest.fn(),
+        },
+      };
+
+      const util = new FilterUtil(options);
+      const actual = util.filterAccountEnvelopesToReevaluateForUpdate(
+        initialResult,
+        _.map(hullNotification.messages, (msg) => {
+          return {
+            id: 1,
+            domains: [msg.account.domain],
+            name: msg.account.name,
+            active: true,
+            created_at: "2015-08-28T09:08:16Z",
+            updated_at: "2015-08-28T09:08:16Z",
+          };
+        }),
+      );
+
+      const expected: OutgoingOperationEnvelopesFiltered<
+        IHullAccountUpdateMessage,
+        FreshdeskCompanyCreateOrUpdate
+      > = {
+        inserts: [],
+        updates: _.map(hullNotification.messages, (msg) => {
+          return {
+            message: msg,
+            operation: "update",
+            serviceObject: {
+              domains: [msg.account.domain],
+              name: msg.account.name,
+            },
+            serviceId: 1,
+          };
+        }),
+        skips: [],
+      };
+
+      expect(actual).toEqual(expected);
+    });
+
+    it("should not fail if no inserts are present in the initial result", () => {
+      const initialResult: OutgoingOperationEnvelopesFiltered<
+        IHullAccountUpdateMessage,
+        FreshdeskCompanyCreateOrUpdate
+      > = {
+        inserts: [],
+        updates: [],
+        skips: [],
+      };
+
+      const options = {
+        privateSettings: {
+          contact_synchronized_segments: ["test1234"],
+          contact_attributes_outbound: [],
+          contact_attributes_inbound: [],
+          account_synchronized_segments: [],
+          account_attributes_outbound: [],
+          account_attributes_inbound: [],
+          account_filter_inbound_require_domain: false,
+        },
+        logger: {
+          info: jest.fn(),
+          log: jest.fn(),
+          warn: jest.fn(),
+          debug: jest.fn(),
+          error: jest.fn(),
+        },
+      };
+
+      const util = new FilterUtil(options);
+      const actual = util.filterAccountEnvelopesToReevaluateForUpdate(
+        initialResult,
+        [],
+      );
+      expect(actual).toEqual(initialResult);
+    });
+
+    it("should not fail if no serviceObject is present in an envelope but remove it from inserts", () => {
+      const hullNotification = {
+        ...AccountUpdateNotification,
+      };
+
+      const initialResult: OutgoingOperationEnvelopesFiltered<
+        IHullAccountUpdateMessage,
+        FreshdeskCompanyCreateOrUpdate
+      > = {
+        inserts: _.map(hullNotification.messages, (msg) => {
+          return {
+            message: msg,
+            operation: "insert",
+          };
+        }),
+        updates: [],
+        skips: [],
+      };
+
+      const options = {
+        privateSettings: {
+          contact_synchronized_segments: ["test1234"],
+          contact_attributes_outbound: [],
+          contact_attributes_inbound: [],
+          account_synchronized_segments: [],
+          account_attributes_outbound: [],
+          account_attributes_inbound: [],
+          account_filter_inbound_require_domain: false,
+        },
+        logger: {
+          info: jest.fn(),
+          log: jest.fn(),
+          warn: jest.fn(),
+          debug: jest.fn(),
+          error: jest.fn(),
+        },
+      };
+
+      const util = new FilterUtil(options);
+      const actual = util.filterAccountEnvelopesToReevaluateForUpdate(
+        initialResult,
+        [],
+      );
+      expect(actual).toEqual({
+        inserts: [],
+        updates: [],
+        skips: [],
+      });
     });
   });
 });

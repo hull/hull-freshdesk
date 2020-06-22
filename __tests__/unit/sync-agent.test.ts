@@ -16,8 +16,10 @@ import {
   STATUS_SETUPREQUIRED_NOLOOKUPCONTACTEMAIL,
   STATUS_WARN_FIELDDOESNTEXIST,
   STATUS_ERROR_AUTHN,
+  ERROR_AUTHN_INCOMPLETE,
 } from "../../src/core/messages";
 import ApiResponseCurrentlyAuthenticatedAgent from "../_data/api_me.json";
+import { CachingUtil } from "../../src/utils/caching-util";
 
 describe("SyncAgent", () => {
   let ctxMock: ContextMock;
@@ -91,7 +93,7 @@ describe("SyncAgent", () => {
   });
 
   describe("sendAccountMessages()", () => {
-    it("should return true", async () => {
+    it("should return false", async () => {
       const agent = new SyncAgent(
         ctxMock.client,
         ctxMock.connector,
@@ -101,7 +103,7 @@ describe("SyncAgent", () => {
 
       const actual = await agent.sendAccountMessages([]);
 
-      expect(actual).toBeTruthy();
+      expect(actual).toBeFalsy();
     });
   });
 
@@ -525,6 +527,29 @@ describe("SyncAgent", () => {
 
       _.set(ctxMock, "connector.private_settings.api_key", API_KEY);
       _.set(ctxMock, "connector.private_settings.domain", API_DOMAIN);
+
+      const redisClient = {
+        set: jest.fn().mockResolvedValue("saved"),
+        hmSet: jest.fn().mockResolvedValue("saved"),
+        get: jest.fn().mockRejectedValue(undefined),
+        getAll: jest.fn().mockResolvedValue(undefined),
+        delete: jest.fn().mockResolvedValue(0),
+        delHash: jest.fn().mockResolvedValue(0),
+        quit: jest.fn().mockReturnValue(() => Promise.resolve()),
+        end: jest.fn(),
+      };
+      const logger = {
+        info: jest.fn(),
+        log: jest.fn(),
+        warn: jest.fn(),
+        debug: jest.fn(),
+        error: jest.fn(),
+      };
+
+      container.register("redisClient", asValue(redisClient));
+      container.register("logger", asValue(logger));
+      container.register("cachingUtil", asClass(CachingUtil).singleton());
+
       const agent = new SyncAgent(
         ctxMock.client,
         ctxMock.connector,
@@ -560,6 +585,29 @@ describe("SyncAgent", () => {
 
       _.set(ctxMock, "connector.private_settings.api_key", API_KEY);
       _.set(ctxMock, "connector.private_settings.domain", API_DOMAIN);
+
+      const redisClient = {
+        set: jest.fn().mockResolvedValue("saved"),
+        hmSet: jest.fn().mockResolvedValue("saved"),
+        get: jest.fn().mockRejectedValue(undefined),
+        getAll: jest.fn().mockResolvedValue(undefined),
+        delete: jest.fn().mockResolvedValue(0),
+        delHash: jest.fn().mockResolvedValue(0),
+        quit: jest.fn().mockReturnValue(() => Promise.resolve()),
+        end: jest.fn(),
+      };
+      const logger = {
+        info: jest.fn(),
+        log: jest.fn(),
+        warn: jest.fn(),
+        debug: jest.fn(),
+        error: jest.fn(),
+      };
+
+      container.register("redisClient", asValue(redisClient));
+      container.register("logger", asValue(logger));
+      container.register("cachingUtil", asClass(CachingUtil).singleton());
+
       const agent = new SyncAgent(
         ctxMock.client,
         ctxMock.connector,
@@ -593,6 +641,29 @@ describe("SyncAgent", () => {
 
       _.set(ctxMock, "connector.private_settings.api_key", API_KEY);
       _.set(ctxMock, "connector.private_settings.domain", API_DOMAIN);
+
+      const redisClient = {
+        set: jest.fn().mockResolvedValue("saved"),
+        hmSet: jest.fn().mockResolvedValue("saved"),
+        get: jest.fn().mockRejectedValue(undefined),
+        getAll: jest.fn().mockResolvedValue(undefined),
+        delete: jest.fn().mockResolvedValue(0),
+        delHash: jest.fn().mockResolvedValue(0),
+        quit: jest.fn().mockReturnValue(() => Promise.resolve()),
+        end: jest.fn(),
+      };
+      const logger = {
+        info: jest.fn(),
+        log: jest.fn(),
+        warn: jest.fn(),
+        debug: jest.fn(),
+        error: jest.fn(),
+      };
+
+      container.register("redisClient", asValue(redisClient));
+      container.register("logger", asValue(logger));
+      container.register("cachingUtil", asClass(CachingUtil).singleton());
+
       const agent = new SyncAgent(
         ctxMock.client,
         ctxMock.connector,
@@ -621,6 +692,29 @@ describe("SyncAgent", () => {
 
       _.set(ctxMock, "connector.private_settings.api_key", API_KEY);
       _.set(ctxMock, "connector.private_settings.domain", API_DOMAIN);
+
+      const redisClient = {
+        set: jest.fn().mockResolvedValue("saved"),
+        hmSet: jest.fn().mockResolvedValue("saved"),
+        get: jest.fn().mockRejectedValue(undefined),
+        getAll: jest.fn().mockResolvedValue(undefined),
+        delete: jest.fn().mockResolvedValue(0),
+        delHash: jest.fn().mockResolvedValue(0),
+        quit: jest.fn().mockReturnValue(() => Promise.resolve()),
+        end: jest.fn(),
+      };
+      const logger = {
+        info: jest.fn(),
+        log: jest.fn(),
+        warn: jest.fn(),
+        debug: jest.fn(),
+        error: jest.fn(),
+      };
+
+      container.register("redisClient", asValue(redisClient));
+      container.register("logger", asValue(logger));
+      container.register("cachingUtil", asClass(CachingUtil).singleton());
+
       const agent = new SyncAgent(
         ctxMock.client,
         ctxMock.connector,
@@ -650,8 +744,26 @@ describe("SyncAgent", () => {
       const actual = await agent.getMetadataFields("contact");
       const expected: FieldsSchema = {
         ok: false,
-        error:
-          "Failed to fetch fields from Freshdesk API: 'Unable to communicate with the Freshdesk API since no API Key has been configured.'",
+        error: `Failed to fetch fields from Freshdesk API: '${ERROR_AUTHN_INCOMPLETE}'`,
+        options: [],
+      };
+
+      expect(actual).toEqual(expected);
+    });
+
+    it("should return error if no domain is present", async () => {
+      _.set(ctxMock, "connector.private_settings.api_key", API_KEY);
+      const agent = new SyncAgent(
+        ctxMock.client,
+        ctxMock.connector,
+        ctxMock.metric,
+        container,
+      );
+
+      const actual = await agent.getMetadataFields("contact");
+      const expected: FieldsSchema = {
+        ok: false,
+        error: `Failed to fetch fields from Freshdesk API: '${ERROR_AUTHN_INCOMPLETE}'`,
         options: [],
       };
 

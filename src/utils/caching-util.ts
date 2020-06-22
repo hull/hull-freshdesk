@@ -1,6 +1,6 @@
 import { Logger } from "winston";
 import { ConnectorRedisClient } from "./redis-client";
-import { ApiResultObject } from "../core/service-objects";
+import { ApiResultObject, CacheScenarioType } from "../core/service-objects";
 import { isNil } from "lodash";
 
 export class CachingUtil {
@@ -67,5 +67,12 @@ export class CachingUtil {
     }
 
     return result;
+  }
+
+  public static getCacheKey(
+    connectorId: string,
+    scenario: CacheScenarioType,
+  ): string {
+    return `${connectorId}_${scenario}`;
   }
 }

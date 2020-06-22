@@ -3,7 +3,7 @@ import { Url } from "url";
 import { API_DOMAIN, API_KEY } from "../../_helpers/constants";
 import ApiResponseListAllContactFields from "../../_data/api__list_all_contact_fields.json";
 import ApiResponseListAllCompanyFields from "../../_data/api__list_all_company_fields.json";
-import ApiResponseCreateContact from "../../_data/api__create_contact.json";
+import ApiResponseUpdateCompany from "../../_data/api__update_company.json";
 
 const setupApiMockResponses = (
   nockFn: (
@@ -33,7 +33,7 @@ const setupApiMockResponses = (
 
   nockFn(`https://${API_DOMAIN}.freshdesk.com`)
     .get(
-      `/api/v2/search/contacts?query="email:'${ApiResponseCreateContact.email}'"`,
+      `/api/v2/search/companies?query="domain:'${ApiResponseUpdateCompany.domains[0]}'"`,
     )
     .matchHeader(
       "authorization",
@@ -41,19 +41,19 @@ const setupApiMockResponses = (
     )
     .reply(
       200,
-      { total: 0, results: [] },
+      { total: 1, results: [ApiResponseUpdateCompany] },
       {
         "Content-Type": "application/json",
       },
     );
 
   nockFn(`https://${API_DOMAIN}.freshdesk.com`)
-    .post("/api/v2/contacts")
+    .put(`/api/v2/companies/${ApiResponseUpdateCompany.id}`)
     .matchHeader(
       "authorization",
       `Basic ${Buffer.from(`${API_KEY}:X`, "utf-8").toString("base64")}`,
     )
-    .reply(200, ApiResponseCreateContact, {
+    .reply(200, ApiResponseUpdateCompany, {
       "Content-Type": "application/json",
     });
 };

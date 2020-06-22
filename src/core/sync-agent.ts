@@ -10,6 +10,11 @@ import {
   OutgoingOperationEnvelopesFiltered,
   FreshdeskContactCreateUpdate,
   OutgoingOperationEnvelope,
+  FreshdeskCompanyField,
+  FreshdeskContactField,
+  FreshdeskContact,
+  FreshdeskCompanyCreateOrUpdate,
+  FreshdeskCompany,
 } from "./service-objects";
 import { FieldsSchema } from "../types/fields-schema";
 import { ServiceClient } from "./service-client";
@@ -22,8 +27,10 @@ import {
   STATUS_SETUPREQUIRED_NOLOOKUPACCTDOMAIN,
   STATUS_SETUPREQUIRED_NOLOOKUPCONTACTEMAIL,
   STATUS_ERROR_AUTHN,
+  ERROR_AUTHN_INCOMPLETE,
 } from "./messages";
 import { ValidationUtil } from "../utils/validation-util";
+import { CachingUtil } from "../utils/caching-util";
 
 export class SyncAgent {
   readonly hullClient: IHullClient;
@@ -86,8 +93,7 @@ export class SyncAgent {
 
     const filterUtil = this.diContainer.resolve<FilterUtil>("filterUtil");
 
-    const envelopesFiltered = filterUtil.filterUserMessagesInitial(messages);
-    console.log(envelopesFiltered);
+    let envelopesFiltered = filterUtil.filterUserMessagesInitial(messages);
     envelopesFiltered.skips.forEach((envelope) => {
       this.hullClient
         .asUser(envelope.message.user)
@@ -115,15 +121,62 @@ export class SyncAgent {
       asValue(companyFieldsResponse.data),
     );
     this.diContainer.register("mappingUtil", asClass(MappingUtil));
+    const mappingUtil = this.diContainer.resolve<MappingUtil>("mappingUtil");
 
     if (envelopesFiltered.inserts.length > 0) {
-      const mappingUtil = this.diContainer.resolve<MappingUtil>("mappingUtil");
       envelopesFiltered.inserts = _.map(
         envelopesFiltered.inserts,
         (envelope) => {
           return mappingUtil.mapHullUserToServiceObject(envelope);
         },
       );
+
+      // Check if the users do not already exist in Freshdesk
+      const emailsToFilter = envelopesFiltered.inserts.map((env) => {
+        if (env.serviceObject) {
+          return env.serviceObject.email;
+        }
+      });
+      const queryStringsFilter: string[] = [];
+      let queryStringFilterCurrent = ``;
+      emailsToFilter.forEach((email, i) => {
+        if (email && email.length !== 0) {
+          if (queryStringFilterCurrent.length !== 0) {
+            if (queryStringFilterCurrent.length + 4 + 3 + email.length > 511) {
+              // Check if max length reached, if so reset the current filter
+              queryStringsFilter.push(
+                _.cloneDeep(queryStringFilterCurrent.trim()),
+              );
+              queryStringFilterCurrent = "";
+            } else {
+              queryStringFilterCurrent += " OR";
+            }
+          }
+
+          queryStringFilterCurrent += ` email:'${email}'`;
+        }
+
+        if (i === emailsToFilter.length - 1) {
+          queryStringsFilter.push(_.cloneDeep(queryStringFilterCurrent.trim()));
+        }
+      });
+      const queriedServiceObjects: FreshdeskContact[] = [];
+      await asyncForEach(queryStringsFilter, async (q: string) => {
+        const filterResult = await serviceClient.filterContacts(q);
+        if (
+          filterResult.success &&
+          filterResult.data &&
+          filterResult.data.total !== 0
+        ) {
+          queriedServiceObjects.push(...filterResult.data.results);
+        }
+      });
+      envelopesFiltered = filterUtil.filterUserEnvelopesToReevaluateForUpdate(
+        envelopesFiltered,
+        queriedServiceObjects,
+      );
+
+      // Perform the inserts
       await asyncForEach(
         envelopesFiltered.inserts,
         async (
@@ -160,6 +213,46 @@ export class SyncAgent {
       );
     }
 
+    // Ensure we have on all update envelopes the serviceObject
+    envelopesFiltered.updates = _.map(envelopesFiltered.updates, (envelope) => {
+      return mappingUtil.mapHullUserToServiceObject(envelope);
+    });
+
+    // Perform the updates
+    await asyncForEach(
+      envelopesFiltered.updates,
+      async (
+        op: OutgoingOperationEnvelope<
+          IHullUserUpdateMessage,
+          FreshdeskContactCreateUpdate
+        >,
+      ) => {
+        if (op.serviceObject !== undefined && op.serviceId !== undefined) {
+          const createResult = await serviceClient.updateContact(
+            op.serviceId,
+            op.serviceObject,
+          );
+          if (createResult.success && createResult.data !== undefined) {
+            const hullInfo = mappingUtil.mapServiceObjectToHullUser(
+              createResult.data,
+            );
+            const userIdent = {
+              ...hullInfo.ident,
+              id: op.message.user.id,
+            };
+            await this.hullClient.asUser(userIdent).traits(hullInfo.attributes);
+            this.hullClient
+              .asUser(userIdent)
+              .logger.info("outgoing.user.success", {
+                data: op.serviceObject,
+                operation: op.operation,
+                details: op.notes,
+              });
+          }
+        }
+      },
+    );
+
     return Promise.resolve(true);
   }
 
@@ -175,6 +268,182 @@ export class SyncAgent {
     messages: IHullAccountUpdateMessage[],
     isBatch = false,
   ): Promise<unknown> {
+    if (
+      _.isNil(this.privateSettings.api_key) ||
+      _.isNil(this.privateSettings.domain)
+    ) {
+      return Promise.resolve(false);
+    }
+
+    const filterUtil = this.diContainer.resolve<FilterUtil>("filterUtil");
+
+    let envelopesFiltered = filterUtil.filterAccountMessagesInitial(messages);
+    envelopesFiltered.skips.forEach((envelope) => {
+      this.hullClient
+        .asAccount(envelope.message.account)
+        .logger.info("outgoing.account.skip", { details: envelope.notes });
+    });
+
+    if (
+      envelopesFiltered.inserts.length === 0 &&
+      envelopesFiltered.updates.length === 0
+    ) {
+      return Promise.resolve(true);
+    }
+
+    const serviceClient = this.diContainer.resolve<ServiceClient>(
+      "serviceClient",
+    );
+    const contactFieldsResponse = await serviceClient.listContactFields();
+    const companyFieldsResponse = await serviceClient.listCompanyFields();
+    this.diContainer.register(
+      "contactFields",
+      asValue(contactFieldsResponse.data),
+    );
+    this.diContainer.register(
+      "companyFields",
+      asValue(companyFieldsResponse.data),
+    );
+    this.diContainer.register("mappingUtil", asClass(MappingUtil));
+    const mappingUtil = this.diContainer.resolve<MappingUtil>("mappingUtil");
+
+    if (envelopesFiltered.inserts.length > 0) {
+      envelopesFiltered.inserts = _.map(
+        envelopesFiltered.inserts,
+        (envelope) => {
+          return mappingUtil.mapHullAccountToServiceObject(envelope);
+        },
+      );
+
+      // Check if the users do not already exist in Freshdesk
+      const domainsToFilter = envelopesFiltered.inserts.map((env) => {
+        if (env.serviceObject) {
+          if (
+            env.serviceObject.domains !== undefined &&
+            env.serviceObject.domains !== null
+          ) {
+            return env.serviceObject.domains[0];
+          }
+        }
+      });
+      const queryStringsFilter: string[] = [];
+      let queryStringFilterCurrent = ``;
+      domainsToFilter.forEach((domain, i) => {
+        if (domain && domain.length !== 0) {
+          if (queryStringFilterCurrent.length !== 0) {
+            if (queryStringFilterCurrent.length + 6 + 3 + domain.length > 511) {
+              // Check if max length reached, if so reset the current filter
+              queryStringsFilter.push(
+                _.cloneDeep(queryStringFilterCurrent.trim()),
+              );
+              queryStringFilterCurrent = "";
+            } else {
+              queryStringFilterCurrent += " OR";
+            }
+          }
+
+          queryStringFilterCurrent += ` domain:'${domain}'`;
+        }
+
+        if (i === domainsToFilter.length - 1) {
+          queryStringsFilter.push(_.cloneDeep(queryStringFilterCurrent.trim()));
+        }
+      });
+      const queriedServiceObjects: FreshdeskCompany[] = [];
+      await asyncForEach(queryStringsFilter, async (q: string) => {
+        const filterResult = await serviceClient.filterCompanies(q);
+        if (
+          filterResult.success &&
+          filterResult.data &&
+          filterResult.data.total !== 0
+        ) {
+          queriedServiceObjects.push(...filterResult.data.results);
+        }
+      });
+      envelopesFiltered = filterUtil.filterAccountEnvelopesToReevaluateForUpdate(
+        envelopesFiltered,
+        queriedServiceObjects,
+      );
+
+      // Perform the inserts
+      await asyncForEach(
+        envelopesFiltered.inserts,
+        async (
+          op: OutgoingOperationEnvelope<
+            IHullAccountUpdateMessage,
+            FreshdeskCompanyCreateOrUpdate
+          >,
+        ) => {
+          if (op.serviceObject !== undefined) {
+            const createResult = await serviceClient.createCompany(
+              op.serviceObject,
+            );
+            if (createResult.success && createResult.data !== undefined) {
+              const hullInfo = mappingUtil.mapServiceObjectToHullAccount(
+                createResult.data,
+              );
+              const accountIdent = {
+                ...hullInfo.ident,
+                id: op.message.account.id,
+              };
+              await this.hullClient
+                .asAccount(accountIdent)
+                .traits(hullInfo.attributes);
+              this.hullClient
+                .asAccount(accountIdent)
+                .logger.info("outgoing.account.success", {
+                  data: op.serviceObject,
+                  operation: op.operation,
+                  details: op.notes,
+                });
+            }
+          }
+        },
+      );
+    }
+
+    // Ensure we have on all update envelopes the serviceObject
+    envelopesFiltered.updates = _.map(envelopesFiltered.updates, (envelope) => {
+      return mappingUtil.mapHullAccountToServiceObject(envelope);
+    });
+
+    // Perform the updates
+    await asyncForEach(
+      envelopesFiltered.updates,
+      async (
+        op: OutgoingOperationEnvelope<
+          IHullAccountUpdateMessage,
+          FreshdeskCompanyCreateOrUpdate
+        >,
+      ) => {
+        if (op.serviceObject !== undefined && op.serviceId !== undefined) {
+          const updateResult = await serviceClient.updateCompany(
+            op.serviceId,
+            op.serviceObject,
+          );
+          if (updateResult.success && updateResult.data !== undefined) {
+            const hullInfo = mappingUtil.mapServiceObjectToHullAccount(
+              updateResult.data,
+            );
+            const accountIdent = {
+              ...hullInfo.ident,
+              id: op.message.account.id,
+            };
+            await this.hullClient
+              .asAccount(accountIdent)
+              .traits(hullInfo.attributes);
+            this.hullClient
+              .asAccount(accountIdent)
+              .logger.info("outgoing.account.success", {
+                data: op.serviceObject,
+                operation: op.operation,
+                details: op.notes,
+              });
+          }
+        }
+      },
+    );
+
     return Promise.resolve(true);
   }
 
@@ -293,17 +562,26 @@ export class SyncAgent {
     try {
       if (
         this.privateSettings.api_key === undefined ||
-        this.privateSettings.api_key === null
+        this.privateSettings.api_key === null ||
+        this.privateSettings.domain === undefined ||
+        this.privateSettings.domain === null
       ) {
-        throw new Error(
-          "Unable to communicate with the Freshdesk API since no API Key has been configured.",
-        );
+        throw new Error(ERROR_AUTHN_INCOMPLETE);
       }
 
       const clnt = this.diContainer.resolve<ServiceClient>("serviceClient");
+      const cacheUtil = this.diContainer.resolve<CachingUtil>("cachingUtil");
+
       switch (objectType) {
         case "company":
-          const fieldsResultCompany = await clnt.listCompanyFields();
+          const cacheKeyCompany = CachingUtil.getCacheKey(
+            this.hullConnector.id,
+            "companyFields",
+          );
+          const fieldsResultCompany = await cacheUtil.getCachedApiResponse<
+            undefined,
+            FreshdeskCompanyField[] | undefined
+          >(cacheKeyCompany, () => clnt.listCompanyFields(), 600);
           if (fieldsResultCompany.success) {
             fieldsSchema.options = _.map(fieldsResultCompany.data, (f) => {
               return {
@@ -321,7 +599,14 @@ export class SyncAgent {
           }
           break;
         default:
-          const fieldsResult = await clnt.listContactFields();
+          const cacheKey = CachingUtil.getCacheKey(
+            this.hullConnector.id,
+            "contactFields",
+          );
+          const fieldsResult = await cacheUtil.getCachedApiResponse<
+            undefined,
+            FreshdeskContactField[] | undefined
+          >(cacheKey, () => clnt.listContactFields(), 600);
           if (fieldsResult.success) {
             fieldsSchema.options = _.map(fieldsResult.data, (f) => {
               return {

@@ -5,6 +5,6 @@ import IHullAccountChanges from "./account-changes";
 export default interface IHullAccountUpdateMessage {
   changes?: IHullAccountChanges;
   account_segments: IHullSegment[];
-  account?: IHullAccount;
+  account: IHullAccount;
   message_id: string;
 }

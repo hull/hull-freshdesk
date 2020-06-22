@@ -83,7 +83,7 @@ export const server = (app: Application): Application => {
         "user:update": actions.userUpdate({
           flowControl: {
             type: "next",
-            size: parseInt(_.get(process.env.FLOW_CONTROL_SIZE, "200"), 10),
+            size: parseInt(_.get(process.env.FLOW_CONTROL_SIZE, "30"), 10),
             in: parseInt(_.get(process.env.FLOW_CONTROL_IN, "5"), 10),
             in_time: parseInt(
               _.get(process.env.FLOW_CONTROL_IN_TIME, "60000"),
@@ -95,7 +95,7 @@ export const server = (app: Application): Application => {
         "account:update": actions.accountUpdate({
           flowControl: {
             type: "next",
-            size: parseInt(_.get(process.env.FLOW_CONTROL_SIZE, "200"), 10),
+            size: parseInt(_.get(process.env.FLOW_CONTROL_SIZE, "30"), 10),
             in: parseInt(_.get(process.env.FLOW_CONTROL_IN, "5"), 10),
             in_time: parseInt(
               _.get(process.env.FLOW_CONTROL_IN_TIME, "60000"),
@@ -116,6 +116,18 @@ export const server = (app: Application): Application => {
       },
       handlers: {
         "user:update": actions.userUpdate({ isBatch: true, container }),
+        "account:update": actions.accountUpdate({ isBatch: true, container }),
+      },
+    }),
+  );
+
+  app.post(
+    "/batch-accounts",
+    smartNotifierHandler({
+      userHandlerOptions: {
+        groupTraits: false,
+      },
+      handlers: {
         "account:update": actions.accountUpdate({ isBatch: true, container }),
       },
     }),

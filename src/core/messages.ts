@@ -1,3 +1,6 @@
+export const ERROR_AUTHN_INCOMPLETE =
+  "Connector unauthenticated: The API Key and/or domain for your Freshdesk account are missing, cannot communicate with the API.";
+
 export const STATUS_SETUPREQUIRED_NOAPIKEY =
   "Connector unauthenticated: No API Key is present.";
 

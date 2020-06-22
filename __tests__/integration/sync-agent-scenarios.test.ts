@@ -36,7 +36,12 @@ describe("SyncAgent", () => {
   });
 
   describe("handle contact scenario", () => {
-    const scenarios = ["user-nomatchingsegments-skip", "user-validdata-insert"];
+    const scenarios = [
+      "user-nomatchingsegments-skip",
+      "user-validdata-insert",
+      "user-validdata-nofdid-update",
+      "user-validdata-fdid-update",
+    ];
     _.forEach(scenarios, (scenarioName) => {
       it(`should process '${scenarioName}' properly`, async () => {
         // Arrange Payload from smart-notifier
@@ -78,7 +83,12 @@ describe("SyncAgent", () => {
   });
 
   describe("handle account scenario", () => {
-    const scenarios: string[] = [];
+    const scenarios: string[] = [
+      "account-nomatchingsegments-skip",
+      "account-validdata-insert",
+      "account-validdata-nofdid-update",
+      "account-validdata-fdid-update",
+    ];
     _.forEach(scenarios, (scenarioName) => {
       it(`should process '${scenarioName}' properly`, async () => {
         // Arrange Payload from smart-notifier

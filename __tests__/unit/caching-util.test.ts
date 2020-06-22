@@ -286,4 +286,12 @@ describe("CachingUtil", () => {
       expect(redisSetMock).toHaveBeenCalledTimes(1);
     });
   });
+
+  describe("getCacheKey()", () => {
+    it("should return the scenario with connector id prefix as key", () => {
+      const connId = "test-123";
+      const actual = CachingUtil.getCacheKey(connId, "contactFields");
+      expect(actual).toEqual(`${connId}_contactFields`);
+    });
+  });
 });

@@ -175,3 +175,5 @@ export interface ApiResultObject<T, U> {
   error?: string | string[];
   errorDetails?: FreshdeskErrorDetails;
 }
+
+export type CacheScenarioType = "contactFields" | "companyFields";

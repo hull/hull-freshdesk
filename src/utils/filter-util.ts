@@ -5,6 +5,8 @@ import {
   OutgoingOperationEnvelopesFiltered,
   FreshdeskContactCreateUpdate,
   FreshdeskCompanyCreateOrUpdate,
+  FreshdeskContact,
+  FreshdeskCompany,
 } from "../core/service-objects";
 import IHullSegment from "../types/hull-segment";
 import _ from "lodash";
@@ -57,6 +59,7 @@ export class FilterUtil {
           result.updates.push({
             message: msg,
             operation: "update",
+            serviceId: _.get(msg, "user.traits_freshdesk/id"),
           });
         }
       }
@@ -102,10 +105,108 @@ export class FilterUtil {
           result.updates.push({
             message: msg,
             operation: "update",
+            serviceId: _.get(msg, "account.freshdesk/id"),
           });
         }
       }
     });
+
+    return result;
+  }
+
+  public filterUserEnvelopesToReevaluateForUpdate(
+    filteredResult: OutgoingOperationEnvelopesFiltered<
+      IHullUserUpdateMessage,
+      FreshdeskContactCreateUpdate
+    >,
+    queriedContacts: FreshdeskContact[],
+  ): OutgoingOperationEnvelopesFiltered<
+    IHullUserUpdateMessage,
+    FreshdeskContactCreateUpdate
+  > {
+    const result: OutgoingOperationEnvelopesFiltered<
+      IHullUserUpdateMessage,
+      FreshdeskContactCreateUpdate
+    > = {
+      inserts: [],
+      updates: filteredResult.updates,
+      skips: filteredResult.skips,
+    };
+    if (filteredResult.inserts && filteredResult.inserts.length !== 0) {
+      filteredResult.inserts.forEach((envelope) => {
+        if (
+          !_.isNil(envelope.serviceObject) &&
+          !_.isNil(envelope.serviceObject.email)
+        ) {
+          const matchingContact = _.find(queriedContacts, (c) => {
+            return (
+              c.email === (envelope.serviceObject as FreshdeskContact).email
+            );
+          });
+
+          if (matchingContact === undefined) {
+            result.inserts.push({ ...envelope });
+          } else {
+            result.updates.push({
+              ...envelope,
+              operation: "update",
+              serviceId: matchingContact.id,
+            });
+          }
+        }
+      });
+    }
+
+    return result;
+  }
+
+  public filterAccountEnvelopesToReevaluateForUpdate(
+    filteredResult: OutgoingOperationEnvelopesFiltered<
+      IHullAccountUpdateMessage,
+      FreshdeskCompanyCreateOrUpdate
+    >,
+    queriedCompanies: FreshdeskCompany[],
+  ): OutgoingOperationEnvelopesFiltered<
+    IHullAccountUpdateMessage,
+    FreshdeskCompanyCreateOrUpdate
+  > {
+    const result: OutgoingOperationEnvelopesFiltered<
+      IHullAccountUpdateMessage,
+      FreshdeskCompanyCreateOrUpdate
+    > = {
+      inserts: [],
+      updates: filteredResult.updates,
+      skips: filteredResult.skips,
+    };
+    if (filteredResult.inserts && filteredResult.inserts.length !== 0) {
+      filteredResult.inserts.forEach((envelope) => {
+        if (
+          !_.isNil(envelope.serviceObject) &&
+          !_.isNil(envelope.serviceObject.domains)
+        ) {
+          const matchingCompany = _.find(queriedCompanies, (c) => {
+            return (
+              !_.isNil(c.domains) &&
+              _.intersection(
+                c.domains,
+                (envelope.serviceObject as FreshdeskCompanyCreateOrUpdate)
+                  .domains as string[],
+              ).length !== 0
+            );
+          });
+
+          if (matchingCompany === undefined) {
+            result.inserts.push({ ...envelope });
+          } else {
+            result.updates.push({
+              ...envelope,
+              operation: "update",
+              serviceId: matchingCompany.id,
+            });
+          }
+        }
+      });
+    }
 
     return result;
   }
