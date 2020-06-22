@@ -1,7 +1,10 @@
 import { ServiceClient } from "../../src/core/service-client";
 import nock from "nock";
 import ApiResponseListAllContactFields from "../_data/api__list_all_contact_fields.json";
-import { ApiResultObject } from "../../src/core/service-objects";
+import {
+  ApiResultObject,
+  FreshdeskPagedResult,
+} from "../../src/core/service-objects";
 import {
   FreshdeskContactField,
   FreshdeskCompanyField,
@@ -21,6 +24,8 @@ import ApiResponseCreateCompany from "../_data/api__create_company.json";
 import ApiResponseUpdateCompany from "../_data/api__update_company.json";
 import ApiResponseFilterCompanies from "../_data/api__filter_companies.json";
 import ApiResponseCurrentlyAuthenticatedAgent from "../_data/api_me.json";
+import ApiResponseListAllContacts from "../_data/api__list_all_contacts.json";
+import ApiResponseListAllCompanies from "../_data/api__list_all_companies.json";
 
 describe("ServiceClient", () => {
   beforeEach(() => {
@@ -677,6 +682,276 @@ describe("ServiceClient", () => {
         success: false,
         error: ["Request failed with status code 401"],
         errorDetails: errorData,
+      };
+
+      expect(actual).toEqual(expected);
+    });
+  });
+
+  describe("listContacts()", () => {
+    it("should list all contacts on success with no next page", async () => {
+      const page = 1;
+      const perPage = 10;
+      nock(API_BASE_URL)
+        .get(`/api/v2/contacts?page=${page}&per_page=${perPage}`)
+        .matchHeader(
+          "authorization",
+          `Basic ${Buffer.from(`${API_KEY}:X`, "utf-8").toString("base64")}`,
+        )
+        .reply(200, ApiResponseListAllContacts, {
+          "Content-Type": "application/json",
+        });
+
+      const client = new ServiceClient({
+        apiKey: API_KEY,
+        domain: API_DOMAIN,
+        logger: console,
+      });
+      const actual = await client.listContacts(page, perPage);
+      const expected: ApiResultObject<
+        unknown,
+        FreshdeskPagedResult<FreshdeskContact> | undefined
+      > = {
+        data: {
+          results: ApiResponseListAllContacts,
+          page,
+          perPage,
+          hasMore: false,
+        },
+        endpoint: `${API_BASE_URL}/api/v2/contacts?page=${page}&per_page=${perPage}`,
+        method: "query",
+        record: undefined,
+        success: true,
+      };
+
+      expect(actual).toEqual(expected);
+    });
+
+    it("should list all filtered contacts on success with no next page", async () => {
+      const page = 1;
+      const perPage = 10;
+      nock(API_BASE_URL)
+        .get(
+          `/api/v2/contacts?page=${page}&per_page=${perPage}&_updated_since=2018-01-19T02:00:00Z`,
+        )
+        .matchHeader(
+          "authorization",
+          `Basic ${Buffer.from(`${API_KEY}:X`, "utf-8").toString("base64")}`,
+        )
+        .reply(200, ApiResponseListAllContacts, {
+          "Content-Type": "application/json",
+        });
+
+      const client = new ServiceClient({
+        apiKey: API_KEY,
+        domain: API_DOMAIN,
+        logger: console,
+      });
+      const actual = await client.listContacts(
+        page,
+        perPage,
+        "_updated_since=2018-01-19T02:00:00Z",
+      );
+      const expected: ApiResultObject<
+        unknown,
+        FreshdeskPagedResult<FreshdeskContact> | undefined
+      > = {
+        data: {
+          results: ApiResponseListAllContacts,
+          page,
+          perPage,
+          hasMore: false,
+        },
+        endpoint: `${API_BASE_URL}/api/v2/contacts?page=${page}&per_page=${perPage}&_updated_since=2018-01-19T02:00:00Z`,
+        method: "query",
+        record: undefined,
+        success: true,
+      };
+
+      expect(actual).toEqual(expected);
+    });
+
+    it("should list all contacts on success with next page", async () => {
+      const page = 1;
+      const perPage = 10;
+      nock(API_BASE_URL)
+        .get(`/api/v2/contacts?page=${page}&per_page=${perPage}`)
+        .matchHeader(
+          "authorization",
+          `Basic ${Buffer.from(`${API_KEY}:X`, "utf-8").toString("base64")}`,
+        )
+        .reply(200, ApiResponseListAllContacts, {
+          "Content-Type": "application/json",
+          link: `<${API_BASE_URL}/api/v2/contacts?page=${
+            page + 1
+          }&per_page=${perPage}>;rel="next"`,
+        });
+
+      const client = new ServiceClient({
+        apiKey: API_KEY,
+        domain: API_DOMAIN,
+        logger: console,
+      });
+      const actual = await client.listContacts(page, perPage);
+      const expected: ApiResultObject<
+        unknown,
+        FreshdeskPagedResult<FreshdeskContact> | undefined
+      > = {
+        data: {
+          results: ApiResponseListAllContacts,
+          page,
+          perPage,
+          hasMore: true,
+        },
+        endpoint: `${API_BASE_URL}/api/v2/contacts?page=${page}&per_page=${perPage}`,
+        method: "query",
+        record: undefined,
+        success: true,
+      };
+
+      expect(actual).toEqual(expected);
+    });
+
+    it("should return an error result and not throw if API responds with status 500", async () => {
+      const page = 1;
+      const perPage = 10;
+      nock(API_BASE_URL)
+        .get(`/api/v2/contacts?page=${page}&per_page=${perPage}`)
+        .matchHeader(
+          "authorization",
+          `Basic ${Buffer.from(`${API_KEY}:X`, "utf-8").toString("base64")}`,
+        )
+        .replyWithError("Some arbitrary error");
+
+      const client = new ServiceClient({
+        apiKey: API_KEY,
+        domain: API_DOMAIN,
+        logger: console,
+      });
+      const actual = await client.listContacts(page, perPage);
+      const expected: ApiResultObject<
+        unknown,
+        FreshdeskPagedResult<FreshdeskContact> | undefined
+      > = {
+        data: undefined,
+        endpoint: `${API_BASE_URL}/api/v2/contacts?page=${page}&per_page=${perPage}`,
+        method: "query",
+        record: undefined,
+        success: false,
+        error: ["Some arbitrary error"],
+      };
+
+      expect(actual).toEqual(expected);
+    });
+  });
+
+  describe("listCompanies()", () => {
+    it("should list all companies on success with no next page", async () => {
+      const page = 1;
+      const perPage = 10;
+      nock(API_BASE_URL)
+        .get(`/api/v2/companies?page=${page}&per_page=${perPage}`)
+        .matchHeader(
+          "authorization",
+          `Basic ${Buffer.from(`${API_KEY}:X`, "utf-8").toString("base64")}`,
+        )
+        .reply(200, ApiResponseListAllCompanies, {
+          "Content-Type": "application/json",
+        });
+
+      const client = new ServiceClient({
+        apiKey: API_KEY,
+        domain: API_DOMAIN,
+        logger: console,
+      });
+      const actual = await client.listCompanies(page, perPage);
+      const expected: ApiResultObject<
+        unknown,
+        FreshdeskPagedResult<FreshdeskCompany> | undefined
+      > = {
+        data: {
+          results: ApiResponseListAllCompanies,
+          page,
+          perPage,
+          hasMore: false,
+        },
+        endpoint: `${API_BASE_URL}/api/v2/companies?page=${page}&per_page=${perPage}`,
+        method: "query",
+        record: undefined,
+        success: true,
+      };
+
+      expect(actual).toEqual(expected);
+    });
+
+    it("should list all companies on success with next page", async () => {
+      const page = 1;
+      const perPage = 10;
+      nock(API_BASE_URL)
+        .get(`/api/v2/companies?page=${page}&per_page=${perPage}`)
+        .matchHeader(
+          "authorization",
+          `Basic ${Buffer.from(`${API_KEY}:X`, "utf-8").toString("base64")}`,
+        )
+        .reply(200, ApiResponseListAllCompanies, {
+          "Content-Type": "application/json",
+          link: `<${API_BASE_URL}/api/v2/companies?page=${
+            page + 1
+          }&per_page=${perPage}>;rel="next"`,
+        });
+
+      const client = new ServiceClient({
+        apiKey: API_KEY,
+        domain: API_DOMAIN,
+        logger: console,
+      });
+      const actual = await client.listCompanies(page, perPage);
+      const expected: ApiResultObject<
+        unknown,
+        FreshdeskPagedResult<FreshdeskCompany> | undefined
+      > = {
+        data: {
+          results: ApiResponseListAllCompanies,
+          page,
+          perPage,
+          hasMore: true,
+        },
+        endpoint: `${API_BASE_URL}/api/v2/companies?page=${page}&per_page=${perPage}`,
+        method: "query",
+        record: undefined,
+        success: true,
+      };
+
+      expect(actual).toEqual(expected);
+    });
+
+    it("should return an error result and not throw if API responds with status 500", async () => {
+      const page = 1;
+      const perPage = 10;
+      nock(API_BASE_URL)
+        .get(`/api/v2/companies?page=${page}&per_page=${perPage}`)
+        .matchHeader(
+          "authorization",
+          `Basic ${Buffer.from(`${API_KEY}:X`, "utf-8").toString("base64")}`,
+        )
+        .replyWithError("Some arbitrary error");
+
+      const client = new ServiceClient({
+        apiKey: API_KEY,
+        domain: API_DOMAIN,
+        logger: console,
+      });
+      const actual = await client.listCompanies(page, perPage);
+      const expected: ApiResultObject<
+        unknown,
+        FreshdeskPagedResult<FreshdeskCompany> | undefined
+      > = {
+        data: undefined,
+        endpoint: `${API_BASE_URL}/api/v2/companies?page=${page}&per_page=${perPage}`,
+        method: "query",
+        record: undefined,
+        success: false,
+        error: ["Some arbitrary error"],
       };
 
       expect(actual).toEqual(expected);

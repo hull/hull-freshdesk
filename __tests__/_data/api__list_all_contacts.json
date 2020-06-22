@@ -1,0 +1,77 @@
+[{
+    "active": false,
+    "address": null,
+    "company_id": null,
+    "description": null,
+    "email": "rachel@freshdesk.com",
+    "id": 2,
+    "job_title": null,
+    "language": "en",
+    "mobile": null,
+    "name": "Rachel",
+    "phone": null,
+    "time_zone": "Chennai",
+    "twitter_id": null,
+    "created_at": "2015-08-18T16:18:14Z",
+    "updated_at": "2015-08-24T09:25:19Z",
+    "other_companies": [
+      4,
+      9,
+      10
+    ],
+    "custom_fields": {
+      "department": "Admin",
+      "fb_profile": null,
+      "permanent": true
+    }
+  },
+  {
+    "active": false,
+    "address": null,
+    "company_id": null,
+    "deleted": false,
+    "description": null,
+    "email": "superman@freshdesk.com",
+    "id": 432,
+    "job_title": null,
+    "language": "en",
+    "mobile": null,
+    "name": "Super Man",
+    "phone": null,
+    "time_zone": "Chennai",
+    "twitter_id": null,
+    "created_at": "2015-08-28T09:08:16Z",
+    "updated_at": "2015-08-28T09:08:16Z",
+    "other_companies": [
+      29,
+      30
+    ],
+    "custom_fields": {
+      "department": "Production",
+      "fb_profile": "https://www.facebook.com/superman.567384",
+      "permanent": true
+    }
+  },
+  {
+    "active": false,
+    "address": null,
+    "company_id": null,
+    "description": null,
+    "email": "greenlantern@freshdesk.com",
+    "id": 434,
+    "job_title": null,
+    "language": "en",
+    "mobile": null,
+    "name": "Green Lantern",
+    "phone": null,
+    "time_zone": "Chennai",
+    "twitter_id": null,
+    "created_at": "2015-08-28T10:27:58Z",
+    "updated_at": "2015-08-28T10:27:58Z",
+    "custom_fields": {
+      "department": "Operations",
+      "fb_profile": null,
+      "permanent": false
+    }
+  }
+]

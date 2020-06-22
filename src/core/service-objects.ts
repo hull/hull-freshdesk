@@ -4,7 +4,7 @@ import {
 } from "../types/user-event";
 
 export interface FreshdeskCustomFields {
-  [key: string]: string | number | boolean | Date | string[];
+  [key: string]: string | number | boolean | Date | string[] | undefined | null;
 }
 
 export interface FreshdeskChoices {
@@ -26,7 +26,7 @@ export interface FreshdeskContactCreateUpdate {
   other_emails?: string[] | null;
   company_id?: number | null;
   view_all_tickets?: boolean | null;
-  other_companies?: FreshdeskContactOtherCompany[] | null;
+  other_companies?: FreshdeskContactOtherCompany[] | number[] | null;
   address?: string | null;
   custom_fields?: FreshdeskCustomFields | null;
   description?: string | null;
@@ -177,3 +177,10 @@ export interface ApiResultObject<T, U> {
 }
 
 export type CacheScenarioType = "contactFields" | "companyFields";
+
+export interface FreshdeskPagedResult<T> {
+  page: number;
+  perPage: number;
+  results: T[];
+  hasMore: boolean;
+}

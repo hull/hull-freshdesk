@@ -1,5 +1,9 @@
 import axios, { AxiosRequestConfig } from "axios";
-import { ApiResultObject, ApiMethod } from "../core/service-objects";
+import {
+  ApiResultObject,
+  ApiMethod,
+  FreshdeskPagedResult,
+} from "../core/service-objects";
 import { ApiUtil } from "../utils/api-util";
 import {
   FreshdeskContactField,
@@ -259,6 +263,75 @@ export class ServiceClient {
         axiosConfig,
         error,
       );
+      return ApiUtil.handleApiResultError(url, method, undefined, error);
+    }
+  }
+
+  public async listContacts(
+    page: number,
+    perPage: number,
+    filter?: string,
+  ): Promise<
+    ApiResultObject<unknown, FreshdeskPagedResult<FreshdeskContact> | undefined>
+  > {
+    let url = `${this.apiBaseUrl}/api/v2/contacts?page=${page}&per_page=${perPage}`;
+    if (filter !== undefined) {
+      url += `&${filter}`;
+    }
+
+    const method: ApiMethod = "query";
+    const axiosConfig = this.getAxiosConfig();
+
+    try {
+      const axiosResponse = await axios.get<Array<FreshdeskContact>>(
+        url,
+        axiosConfig,
+      );
+
+      const pagedResult: FreshdeskPagedResult<FreshdeskContact> = {
+        results: axiosResponse.data,
+        page,
+        perPage,
+        hasMore: axiosResponse.headers.link !== undefined,
+      };
+
+      return ApiUtil.handleApiResultSuccess(url, method, undefined, {
+        ...axiosResponse,
+        data: pagedResult,
+      });
+    } catch (error) {
+      return ApiUtil.handleApiResultError(url, method, undefined, error);
+    }
+  }
+
+  public async listCompanies(
+    page: number,
+    perPage: number,
+  ): Promise<
+    ApiResultObject<unknown, FreshdeskPagedResult<FreshdeskCompany> | undefined>
+  > {
+    const url = `${this.apiBaseUrl}/api/v2/companies?page=${page}&per_page=${perPage}`;
+    const method: ApiMethod = "query";
+    const axiosConfig = this.getAxiosConfig();
+
+    try {
+      const axiosResponse = await axios.get<Array<FreshdeskCompany>>(
+        url,
+        axiosConfig,
+      );
+
+      const pagedResult: FreshdeskPagedResult<FreshdeskCompany> = {
+        results: axiosResponse.data,
+        page,
+        perPage,
+        hasMore: axiosResponse.headers.link !== undefined,
+      };
+
+      return ApiUtil.handleApiResultSuccess(url, method, undefined, {
+        ...axiosResponse,
+        data: pagedResult,
+      });
+    } catch (error) {
       return ApiUtil.handleApiResultError(url, method, undefined, error);
     }
   }
