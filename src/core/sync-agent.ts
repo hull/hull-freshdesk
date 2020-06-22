@@ -15,6 +15,7 @@ import {
   FreshdeskContact,
   FreshdeskCompanyCreateOrUpdate,
   FreshdeskCompany,
+  FreshdeskPagedResult,
 } from "./service-objects";
 import { FieldsSchema } from "../types/fields-schema";
 import { ServiceClient } from "./service-client";
@@ -631,5 +632,111 @@ export class SyncAgent {
     } finally {
       return fieldsSchema;
     }
+  }
+
+  public async fetchContacts(updatedSince?: string): Promise<unknown> {
+    const jobDetails = {
+      objectType: "contacts",
+      jobType: updatedSince ? "incremental" : "full",
+    };
+
+    this.hullClient.logger.info("incoming.job.start", jobDetails);
+
+    try {
+      const serviceClient = this.diContainer.resolve<ServiceClient>(
+        "serviceClient",
+      );
+      const contactFieldsResponse = await serviceClient.listContactFields();
+      const companyFieldsResponse = await serviceClient.listCompanyFields();
+      this.diContainer.register(
+        "contactFields",
+        asValue(contactFieldsResponse.data),
+      );
+      this.diContainer.register(
+        "companyFields",
+        asValue(companyFieldsResponse.data),
+      );
+      this.diContainer.register("mappingUtil", asClass(MappingUtil));
+      const mappingUtil = this.diContainer.resolve<MappingUtil>("mappingUtil");
+
+      let hasMore = true;
+      let page = 1;
+      const perPage = 100;
+      let filter = undefined;
+      if (updatedSince) {
+        filter = `_updated_since=${updatedSince}`;
+      }
+      while (hasMore === true) {
+        const listResult = await serviceClient.listContacts(
+          page,
+          perPage,
+          filter,
+        );
+        if (listResult.success) {
+          const apiData = listResult.data as FreshdeskPagedResult<
+            FreshdeskContact
+          >;
+
+          this.hullClient.logger.info("incoming.job.progress", {
+            ...jobDetails,
+            page,
+            perPage,
+            hasMore: apiData.hasMore,
+            count: apiData.results.length,
+          });
+
+          hasMore = apiData.hasMore;
+          await asyncForEach(apiData.results, async (r: FreshdeskContact) => {
+            const hullInfo = mappingUtil.mapServiceObjectToHullUser(r);
+            await this.hullClient
+              .asUser(hullInfo.ident)
+              .traits(hullInfo.attributes);
+            this.hullClient
+              .asUser(hullInfo.ident)
+              .logger.info("incoming.user.success", {
+                attributes: hullInfo.attributes,
+                ...jobDetails,
+              });
+          });
+
+          page += 1;
+        } else {
+          let errorMessage =
+            "Failed to complete fetch job due to unknown error.";
+          if (_.isArray(listResult.error)) {
+            errorMessage = listResult.error.join(" ");
+          } else if (typeof listResult.error === "string") {
+            errorMessage = listResult.error;
+          }
+
+          if (listResult.errorDetails !== undefined) {
+            if (listResult.errorDetails.description) {
+              errorMessage += ` ${listResult.errorDetails.description}`;
+            }
+
+            if (listResult.errorDetails.errors.length !== 0) {
+              const concatMsg = listResult.errorDetails.errors
+                .map(
+                  (e) =>
+                    `${e.message} (code: '${e.code}', field: '${e.field}')`,
+                )
+                .join(" ");
+              errorMessage += ` ${concatMsg}`;
+            }
+          }
+          throw new Error(errorMessage);
+        }
+      }
+
+      this.hullClient.logger.info("incoming.job.success", jobDetails);
+    } catch (error) {
+      const jobErrorDetails = {
+        ...jobDetails,
+        error: error.message,
+      };
+
+      this.hullClient.logger.error("incoming.job.error", jobErrorDetails);
+    }
+    return Promise.resolve(true);
   }
 }

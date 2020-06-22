@@ -62,6 +62,7 @@
     "express": "^4.17.1",
     "hull": "^0.13.20",
     "lodash": "^4.17.15",
+    "luxon": "^1.24.1",
     "pm2": "^4.4.0",
     "redis": "^3.0.2",
     "winston": "^3.2.1"
@@ -79,6 +80,7 @@
     "@types/express": "^4.17.6",
     "@types/jest": "^25.2.1",
     "@types/lodash": "^4.14.150",
+    "@types/luxon": "^1.24.0",
     "@types/nock": "^11.1.0",
     "@types/node": "^13.13.5",
     "@types/redis": "^2.8.21",
