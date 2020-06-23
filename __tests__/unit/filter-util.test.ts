@@ -10,6 +10,8 @@ import IHullUserUpdateMessage from "../../src/types/user-update-message";
 import IHullAccountUpdateMessage from "../../src/types/account-update-message";
 import _ from "lodash";
 import { VALIDATION_SKIP_HULLOBJECT_NOTINANYSEGMENT } from "../../src/core/messages";
+import ApiResponseListAllCompanies from "../_data/api__list_all_companies.json";
+import { DateTime } from "luxon";
 
 describe("FilterUtil", () => {
   describe("constructor()", () => {
@@ -780,6 +782,39 @@ describe("FilterUtil", () => {
         updates: [],
         skips: [],
       });
+    });
+  });
+
+  describe("filterCompaniesUpdatedSince()", () => {
+    it("should return only companies with updated_at after the specified timestamp", () => {
+      const threshold = DateTime.utc().minus({ minutes: 10 }).toISO();
+      const companies = _.cloneDeep(ApiResponseListAllCompanies);
+      companies[0].updated_at = DateTime.utc().minus({ minutes: 5 }).toISO();
+      companies[1].updated_at = DateTime.utc().minus({ hours: 5 }).toISO();
+
+      const options = {
+        privateSettings: {
+          contact_synchronized_segments: ["test1234"],
+          contact_attributes_outbound: [],
+          contact_attributes_inbound: [],
+          account_synchronized_segments: [],
+          account_attributes_outbound: [],
+          account_attributes_inbound: [],
+          account_filter_inbound_require_domain: false,
+        },
+        logger: {
+          info: jest.fn(),
+          log: jest.fn(),
+          warn: jest.fn(),
+          debug: jest.fn(),
+          error: jest.fn(),
+        },
+      };
+
+      const util = new FilterUtil(options);
+      const actual = util.filterCompaniesUpdatedSince(companies, threshold);
+      expect(actual).toHaveLength(1);
+      expect(actual).toEqual([companies[0]]);
     });
   });
 });

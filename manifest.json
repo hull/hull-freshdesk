@@ -141,6 +141,21 @@
         "entity": "users"
       }
     }
+  }, {
+    "title": "Fetch All Companies",
+    "name": "fetch_all_companies",
+    "format": "button",
+    "url": "/fetch/companies/full",
+    "handler": "fetchAll",
+    "options": {
+      "fireAndForget": true,
+      "confirm": {
+        "action": "fetch",
+        "text": "You are about to pull all companies from Freshdesk into Hull. Please make sure you've configured your account identity properly, and that you have the attributes you'd like to fetch configured. Be careful when clicking this multiple times, it can result in long operations. Check out the \"Logs\" tab to track `incoming.account.success` messages as accounts are ingested.",
+        "button": "Start Fetching Contacts",
+        "entity": "accounts"
+      }
+    }
   }],
   "schedules": [{
       "url": "/status",
@@ -151,6 +166,11 @@
       "url": "/fetch/contacts/incremental",
       "type": "interval",
       "value": "5"
+    },
+    {
+      "url": "/fetch/companies/incremental",
+      "type": "interval",
+      "value": "30"
     }
   ],
   "subscriptions": [{
@@ -180,7 +200,8 @@
         "private_settings.account_lookup_attribute_domain",
         "private_settings.account_attributes_outbound",
         "private_settings.account_filter_inbound_require_domain",
-        "private_settings.account_attributes_inbound"
+        "private_settings.account_attributes_inbound",
+        "json.fetch_all_companies"
       ]
     }
   ]

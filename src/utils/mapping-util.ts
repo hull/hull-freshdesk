@@ -283,6 +283,7 @@ export class MappingUtil {
       data.domains.length !== 0
     ) {
       _.set(hullData, "ident.domain", data.domains[0]);
+      _.set(hullData.attributes, "freshdesk/domains", data.domains);
     }
 
     hullData.ident.anonymous_id = `freshdesk:${data.id}`;

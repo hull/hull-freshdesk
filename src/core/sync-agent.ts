@@ -739,4 +739,109 @@ export class SyncAgent {
     }
     return Promise.resolve(true);
   }
+
+  public async fetchCompanies(updatedSince?: string): Promise<unknown> {
+    const jobDetails = {
+      objectType: "companies",
+      jobType: updatedSince ? "incremental" : "full",
+    };
+
+    this.hullClient.logger.info("incoming.job.start", jobDetails);
+
+    try {
+      const serviceClient = this.diContainer.resolve<ServiceClient>(
+        "serviceClient",
+      );
+      const contactFieldsResponse = await serviceClient.listContactFields();
+      const companyFieldsResponse = await serviceClient.listCompanyFields();
+      this.diContainer.register(
+        "contactFields",
+        asValue(contactFieldsResponse.data),
+      );
+      this.diContainer.register(
+        "companyFields",
+        asValue(companyFieldsResponse.data),
+      );
+      this.diContainer.register("mappingUtil", asClass(MappingUtil));
+      const mappingUtil = this.diContainer.resolve<MappingUtil>("mappingUtil");
+      const filterUtil = this.diContainer.resolve<FilterUtil>("filterUtil");
+
+      let hasMore = true;
+      let page = 1;
+      const perPage = 100;
+      while (hasMore === true) {
+        const listResult = await serviceClient.listCompanies(page, perPage);
+        if (listResult.success) {
+          const apiData = listResult.data as FreshdeskPagedResult<
+            FreshdeskCompany
+          >;
+
+          this.hullClient.logger.info("incoming.job.progress", {
+            ...jobDetails,
+            page,
+            perPage,
+            hasMore: apiData.hasMore,
+            count: apiData.results.length,
+          });
+
+          hasMore = apiData.hasMore;
+          const filteredResults = updatedSince
+            ? filterUtil.filterCompaniesUpdatedSince(
+                apiData.results,
+                updatedSince,
+              )
+            : apiData.results;
+          await asyncForEach(filteredResults, async (r: FreshdeskCompany) => {
+            const hullInfo = mappingUtil.mapServiceObjectToHullAccount(r);
+            await this.hullClient
+              .asAccount(hullInfo.ident)
+              .traits(hullInfo.attributes);
+            this.hullClient
+              .asAccount(hullInfo.ident)
+              .logger.info("incoming.account.success", {
+                attributes: hullInfo.attributes,
+                ...jobDetails,
+              });
+          });
+
+          page += 1;
+        } else {
+          let errorMessage =
+            "Failed to complete fetch job due to unknown error.";
+          if (_.isArray(listResult.error)) {
+            errorMessage = listResult.error.join(" ");
+          } else if (typeof listResult.error === "string") {
+            errorMessage = listResult.error;
+          }
+
+          if (listResult.errorDetails !== undefined) {
+            if (listResult.errorDetails.description) {
+              errorMessage += ` ${listResult.errorDetails.description}`;
+            }
+
+            if (listResult.errorDetails.errors.length !== 0) {
+              const concatMsg = listResult.errorDetails.errors
+                .map(
+                  (e) =>
+                    `${e.message} (code: '${e.code}', field: '${e.field}')`,
+                )
+                .join(" ");
+              errorMessage += ` ${concatMsg}`;
+            }
+          }
+          throw new Error(errorMessage.trim());
+        }
+      }
+
+      this.hullClient.logger.info("incoming.job.success", jobDetails);
+    } catch (error) {
+      const jobErrorDetails = {
+        ...jobDetails,
+        error: error.message,
+      };
+
+      this.hullClient.logger.error("incoming.job.error", jobErrorDetails);
+    }
+    return Promise.resolve(true);
+  }
 }

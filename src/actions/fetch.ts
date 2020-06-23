@@ -65,13 +65,24 @@ export const fetchHandlerFactory = (
           `${ship.id}_lastjob_${objectType}`,
         );
         if (isNil(lastJobIso)) {
-          lastJobIso = DateTime.utc().minus({ minutes: 5 }).toISO();
+          let interval = 10;
+          switch (objectType) {
+            case "companies":
+              interval = 30;
+              break;
+            default:
+              interval = 5;
+              break;
+          }
+          lastJobIso = DateTime.utc().minus({ minutes: interval }).toISO();
         }
         updatedSince = lastJobIso;
       }
 
       if (objectType === "contacts") {
         syncAgent.fetchContacts(updatedSince);
+      } else if (objectType === "companies") {
+        syncAgent.fetchCompanies(updatedSince);
       }
 
       logger.debug(`Started ${jobType} fetch job for '${objectType}'.`);
