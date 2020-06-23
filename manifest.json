@@ -30,7 +30,7 @@
     },
     {
       "name": "contact_synchronized_segments",
-      "title": "User Filter",
+      "title": "Outgoing Data: User Filter",
       "description": "Synchronize Hull Users to Freshdesk Contacts when they are part of one of these segments.",
       "type": "array",
       "format": "segment",
@@ -38,7 +38,7 @@
     },
     {
       "name": "contact_lookup_attribute_email",
-      "title": "Email Lookup",
+      "title": "Outgoing Identity: Email",
       "description": "Define which attribute on the Hull User Profile shall be used to lookup Contacts in Freshdesk by their email.",
       "type": "string",
       "format": "trait",
@@ -75,7 +75,7 @@
     },
     {
       "name": "account_synchronized_segments",
-      "title": "Account Filter",
+      "title": "Outgoing Data: Account Filter",
       "description": "Synchronize Hull Accounts to Freshdesk Companies when they are part of one of these segments.",
       "type": "array",
       "format": "accountSegment",
@@ -83,7 +83,7 @@
     },
     {
       "name": "account_lookup_attribute_domain",
-      "title": "Domain Lookup",
+      "title": "Outgoing Identity: Domain",
       "description": "Define which attribute on the Hull Account Profile shall be used to lookup Companies in Freshdesk by their domain.",
       "type": "string",
       "format": "accountTrait",
@@ -105,8 +105,8 @@
     },
     {
       "name": "account_filter_inbound_require_domain",
-      "title": "Require Domain for Incoming",
-      "description": "Skip Companies when importing data that do not have a domain in Freshdesk",
+      "title": "Incoming Identity: Require Domain",
+      "description": "Skip Companies when importing data that do not have a domain in Freshdesk.",
       "type": "boolean",
       "default": false
     },
