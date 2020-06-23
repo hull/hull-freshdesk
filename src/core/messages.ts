@@ -1,6 +1,16 @@
 export const ERROR_AUTHN_INCOMPLETE =
   "Connector unauthenticated: The API Key and/or domain for your Freshdesk account are missing, cannot communicate with the API.";
 
+export const ERROR_OBJECTTYPE_UNDEFINED =
+  "Invalid Request: Object type was expected but none was specified.";
+
+export const ERROR_OBJECTTYPE_UNDEFINED_CODE = "objecttype_undefined";
+
+export const ERROR_JOBTYPE_NOTSUPPORTED = (jobType: string) =>
+  `Invalid Request: The job type '${jobType}' is not supported.`;
+
+export const ERROR_JOBTYPE_NOTSUPPORTED_CODE = "jobtype_notsupported";
+
 export const STATUS_SETUPREQUIRED_NOAPIKEY =
   "Connector unauthenticated: No API Key is present.";
 

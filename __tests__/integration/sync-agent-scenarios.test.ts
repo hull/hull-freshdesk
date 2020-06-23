@@ -131,7 +131,12 @@ describe("SyncAgent", () => {
   });
 
   describe("handle fetch user scenario", () => {
-    const scenarios = ["userfetch-full-onepage"];
+    const scenarios = [
+      "userfetch-full-onepage",
+      "userfetch-incremental-onepage",
+      "userfetch-full-multipage-errorsimple",
+      "userfetch-full-multipage-errordetailed",
+    ];
     _.forEach(scenarios, (scenarioName) => {
       it(`should process '${scenarioName}' properly`, async () => {
         // Arrange Payload from smart-notifier

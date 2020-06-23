@@ -724,7 +724,7 @@ export class SyncAgent {
               errorMessage += ` ${concatMsg}`;
             }
           }
-          throw new Error(errorMessage);
+          throw new Error(errorMessage.trim());
         }
       }
 

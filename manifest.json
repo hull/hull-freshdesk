@@ -126,11 +126,33 @@
       }
     }
   ],
-  "schedules": [{
-    "url": "/status",
-    "type": "interval",
-    "value": "30"
+  "json": [{
+    "title": "Fetch All Contacts",
+    "name": "fetch_all_contacts",
+    "format": "button",
+    "url": "/fetch/contacts/full",
+    "handler": "fetchAll",
+    "options": {
+      "fireAndForget": true,
+      "confirm": {
+        "action": "fetch",
+        "text": "You are about to pull all contacts from Freshdesk into Hull. Please make sure you've configured your user identity properly, and that you have the attributes you'd like to fetch configured. Be careful when clicking this multiple times, it can result in long operations. Check out the \"Logs\" tab to track `incoming.user.success` messages as users are ingested.",
+        "button": "Start Fetching Contacts",
+        "entity": "users"
+      }
+    }
   }],
+  "schedules": [{
+      "url": "/status",
+      "type": "interval",
+      "value": "30"
+    },
+    {
+      "url": "/fetch/contacts/incremental",
+      "type": "interval",
+      "value": "5"
+    }
+  ],
   "subscriptions": [{
     "url": "/smart-notifier"
   }],
@@ -146,7 +168,8 @@
         "private_settings.contact_synchronized_segments",
         "private_settings.contact_lookup_attribute_email",
         "private_settings.contact_attributes_outbound",
-        "private_settings.contact_attributes_inbound"
+        "private_settings.contact_attributes_inbound",
+        "json.fetch_all_contacts"
       ]
     },
     {

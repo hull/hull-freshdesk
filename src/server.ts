@@ -135,10 +135,13 @@ export const server = (app: Application): Application => {
 
   // CORS enabled endpoints
   app.use("/meta/fields/:type", cors(), actions.metaFields(container));
+  app.use("/fetch/:type/:jobType", cors(), actions.fetch(container));
 
   // OAuth handler endpoints
   //app.get("/auth", actions.authInitializerFactory(container));
   //app.get("/auth/callback", actions.authCallbackFactory(container));
+
+  // Fetch endpoints
 
   // Status endpoints
   app.use("/status", actions.status(container));
