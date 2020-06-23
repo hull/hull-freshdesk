@@ -1,18 +1,16 @@
 module.exports = {
-  apps: [
-    {
-      name: "Hull Salesforce Dependant Custom Objects",
-      script: "dist/index.js",
-      instances: 1,
-      autorestart: true,
-      watch: false,
-      max_memory_restart: "450M",
-      env: {
-        NODE_ENV: "development",
-      },
-      env_production: {
-        NODE_ENV: "production",
-      },
+  apps: [{
+    name: "Hull Freshdesk",
+    script: "dist/index.js",
+    instances: 1,
+    autorestart: true,
+    watch: false,
+    max_memory_restart: "450M",
+    env: {
+      NODE_ENV: "development",
     },
-  ],
+    env_production: {
+      NODE_ENV: "production",
+    },
+  }, ],
 };
