@@ -115,6 +115,7 @@ export interface IncomingData<T, U> {
   attributes: U;
   properties?: IHullUserEventProps;
   context?: IHullUserEventContext;
+  eventName?: string;
 }
 
 export interface OutgoingOperationEnvelopesFiltered<T, U> {

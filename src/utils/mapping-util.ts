@@ -9,6 +9,7 @@ import {
   FreshdeskCompanyField,
   FreshdeskCompanyCreateOrUpdate,
   FreshdeskCompany,
+  FreshdeskTicket,
 } from "../core/service-objects";
 import IHullUserUpdateMessage from "../types/user-update-message";
 import _ from "lodash";
@@ -290,6 +291,46 @@ export class MappingUtil {
     _.set(hullData.attributes, "freshdesk/id", {
       value: data.id,
       operation: "setIfNull",
+    });
+
+    return hullData;
+  }
+
+  public mapTicketToHullEvent(
+    data: FreshdeskTicket,
+  ): IncomingData<IHullUserClaims, IHullUserAttributes> {
+    const hullData: IncomingData<IHullUserClaims, IHullUserAttributes> = {
+      objectType: "event",
+      ident: {},
+      attributes: {},
+      properties: {},
+      context: {
+        event_id: `fd-${data.id}-${data.updated_at}`,
+        ip: 0,
+        source: "freshdesk",
+      },
+      eventName: `Ticket ${
+        data.created_at === data.updated_at ? "created" : "updated"
+      }`,
+    };
+
+    if (!_.isNil(data.requester_id)) {
+      hullData.ident.anonymous_id = `freshdesk:${data.requester_id}`;
+    }
+
+    if (!_.isNil(_.get(data, "requester.email", undefined))) {
+      _.set(hullData, "ident.email", _.get(data, "requester.email"));
+    }
+
+    const propsToProcess = _.omit(data, ["attachments", "requester"]);
+    _.forIn(propsToProcess, (v, k) => {
+      if (k === "custom_fields" || k === "stats") {
+        _.forIn(v, (vn, kn) => {
+          _.set(hullData, `properties.${k}__${_.snakeCase(kn)}`, vn);
+        });
+      } else {
+        _.set(hullData, `properties.${k}`, v);
+      }
     });
 
     return hullData;
