@@ -10,6 +10,9 @@ import {
   FreshdeskCompanyCreateOrUpdate,
   FreshdeskCompany,
   FreshdeskTicket,
+  FreshdeskTicketPriority,
+  FreshdeskTicketSource,
+  FreshdeskTicketStatus,
 } from "../core/service-objects";
 import IHullUserUpdateMessage from "../types/user-update-message";
 import _ from "lodash";
@@ -332,6 +335,23 @@ export class MappingUtil {
         _.set(hullData, `properties.${k}`, v);
       }
     });
+
+    // Get the string value of the enums
+    _.set(
+      hullData,
+      `properties.priority_name`,
+      FreshdeskTicketPriority[propsToProcess.priority],
+    );
+    _.set(
+      hullData,
+      `properties.source_name`,
+      FreshdeskTicketSource[propsToProcess.source],
+    );
+    _.set(
+      hullData,
+      `properties.status_name`,
+      FreshdeskTicketStatus[propsToProcess.status],
+    );
 
     return hullData;
   }
