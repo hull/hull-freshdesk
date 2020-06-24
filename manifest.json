@@ -156,6 +156,21 @@
         "entity": "accounts"
       }
     }
+  }, {
+    "title": "Fetch All Tickets",
+    "name": "fetch_all_tickets",
+    "format": "button",
+    "url": "/fetch/tickets/full",
+    "handler": "fetchAll",
+    "options": {
+      "fireAndForget": true,
+      "confirm": {
+        "action": "fetch",
+        "text": "You are about to pull all tickets from Freshdesk into Hull. Be careful when clicking this multiple times, it can result in long operations. Check out the \"Logs\" tab to track `incoming.event.success` messages as tickets are ingested.",
+        "button": "Start Fetching Tickets",
+        "entity": "events"
+      }
+    }
   }],
   "schedules": [{
       "url": "/status",
@@ -171,6 +186,11 @@
       "url": "/fetch/companies/incremental",
       "type": "interval",
       "value": "30"
+    },
+    {
+      "url": "/fetch/tickets/incremental",
+      "type": "interval",
+      "value": "5"
     }
   ],
   "subscriptions": [{
@@ -202,6 +222,13 @@
         "private_settings.account_filter_inbound_require_domain",
         "private_settings.account_attributes_inbound",
         "json.fetch_all_companies"
+      ]
+    },
+    {
+      "title": "Tickets",
+      "description": "Fetch historical tickets manually. Note that only the latest state of the ticket will be reflected as `Ticket updated` event on the user timeline.",
+      "properties": [
+        "json.fetch_all_tickets"
       ]
     }
   ]

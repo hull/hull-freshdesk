@@ -12,7 +12,7 @@ import { ConnectorRedisClient } from "../utils/redis-client";
 import { isNil } from "lodash";
 import { DateTime } from "luxon";
 
-type FetchObjectType = "contacts" | "companies";
+type FetchObjectType = "contacts" | "companies" | "tickets";
 
 export const fetchHandlerFactory = (
   container: AwilixContainer,
@@ -83,6 +83,8 @@ export const fetchHandlerFactory = (
         syncAgent.fetchContacts(updatedSince);
       } else if (objectType === "companies") {
         syncAgent.fetchCompanies(updatedSince);
+      } else if (objectType === "tickets") {
+        syncAgent.fetchTickets(updatedSince);
       }
 
       logger.debug(`Started ${jobType} fetch job for '${objectType}'.`);

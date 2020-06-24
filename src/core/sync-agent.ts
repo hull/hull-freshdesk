@@ -16,6 +16,7 @@ import {
   FreshdeskCompanyCreateOrUpdate,
   FreshdeskCompany,
   FreshdeskPagedResult,
+  FreshdeskTicket,
 } from "./service-objects";
 import { FieldsSchema } from "../types/fields-schema";
 import { ServiceClient } from "./service-client";
@@ -802,6 +803,124 @@ export class SyncAgent {
                 attributes: hullInfo.attributes,
                 ...jobDetails,
               });
+          });
+
+          page += 1;
+        } else {
+          let errorMessage =
+            "Failed to complete fetch job due to unknown error.";
+          if (_.isArray(listResult.error)) {
+            errorMessage = listResult.error.join(" ");
+          } else if (typeof listResult.error === "string") {
+            errorMessage = listResult.error;
+          }
+
+          if (listResult.errorDetails !== undefined) {
+            if (listResult.errorDetails.description) {
+              errorMessage += ` ${listResult.errorDetails.description}`;
+            }
+
+            if (listResult.errorDetails.errors.length !== 0) {
+              const concatMsg = listResult.errorDetails.errors
+                .map(
+                  (e) =>
+                    `${e.message} (code: '${e.code}', field: '${e.field}')`,
+                )
+                .join(" ");
+              errorMessage += ` ${concatMsg}`;
+            }
+          }
+          throw new Error(errorMessage.trim());
+        }
+      }
+
+      this.hullClient.logger.info("incoming.job.success", jobDetails);
+    } catch (error) {
+      const jobErrorDetails = {
+        ...jobDetails,
+        error: error.message,
+      };
+
+      this.hullClient.logger.error("incoming.job.error", jobErrorDetails);
+    }
+    return Promise.resolve(true);
+  }
+
+  public async fetchTickets(updatedSince?: string): Promise<unknown> {
+    const jobDetails = {
+      objectType: "tickets",
+      jobType: updatedSince ? "incremental" : "full",
+    };
+
+    this.hullClient.logger.info("incoming.job.start", jobDetails);
+    try {
+      const serviceClient = this.diContainer.resolve<ServiceClient>(
+        "serviceClient",
+      );
+      const contactFieldsResponse = await serviceClient.listContactFields();
+      const companyFieldsResponse = await serviceClient.listCompanyFields();
+      this.diContainer.register(
+        "contactFields",
+        asValue(contactFieldsResponse.data),
+      );
+      this.diContainer.register(
+        "companyFields",
+        asValue(companyFieldsResponse.data),
+      );
+      this.diContainer.register("mappingUtil", asClass(MappingUtil));
+      const mappingUtil = this.diContainer.resolve<MappingUtil>("mappingUtil");
+
+      let hasMore = true;
+      let page = 1;
+      const perPage = 100;
+
+      while (hasMore === true) {
+        const listResult = await serviceClient.listTickets(
+          page,
+          perPage,
+          "updated_at",
+          "desc",
+          ["description", "requester", "stats"],
+          updatedSince,
+        );
+        if (listResult.success) {
+          const apiData = listResult.data as FreshdeskPagedResult<
+            FreshdeskTicket
+          >;
+
+          this.hullClient.logger.info("incoming.job.progress", {
+            ...jobDetails,
+            page,
+            perPage,
+            hasMore: apiData.hasMore,
+            count: apiData.results.length,
+          });
+
+          hasMore = apiData.hasMore;
+          await asyncForEach(apiData.results, async (r: FreshdeskTicket) => {
+            const hullInfo = mappingUtil.mapTicketToHullEvent(r);
+            console.log(">>> Hull INFO", hullInfo);
+            if (
+              !_.isNil(hullInfo.eventName) &&
+              !_.isNil(hullInfo.properties) &&
+              !_.isNil(hullInfo.context) &&
+              Object.keys(hullInfo.ident).length !== 0
+            ) {
+              await this.hullClient
+                .asUser(hullInfo.ident)
+                .track(
+                  hullInfo.eventName,
+                  hullInfo.properties,
+                  hullInfo.context,
+                );
+              this.hullClient
+                .asUser(hullInfo.ident)
+                .logger.info("incoming.event.success", {
+                  properties: hullInfo.properties,
+                  context: hullInfo.context,
+                  ...jobDetails,
+                });
+            }
           });
 
           page += 1;
