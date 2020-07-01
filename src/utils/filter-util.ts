@@ -12,6 +12,7 @@ import IHullSegment from "../types/hull-segment";
 import _ from "lodash";
 import { VALIDATION_SKIP_HULLOBJECT_NOTINANYSEGMENT } from "../core/messages";
 import IHullAccountUpdateMessage from "../types/account-update-message";
+import { DateTime } from "luxon";
 
 export class FilterUtil {
   readonly privateSettings: PrivateSettings;
@@ -209,6 +210,35 @@ export class FilterUtil {
     }
 
     return result;
+  }
+
+  public filterCompaniesUpdatedSince(
+    companies: FreshdeskCompany[],
+    updatedSince: string,
+  ): FreshdeskCompany[] {
+    const filteredCompanies: FreshdeskCompany[] = [];
+    this.logger.debug(
+      `Started filtering ${companies.length} companies for updates since ${updatedSince}...`,
+    );
+    const threshold = DateTime.fromISO(updatedSince);
+
+    companies.forEach((c: FreshdeskCompany) => {
+      if (DateTime.fromISO(c.updated_at) > threshold) {
+        this.logger.debug(
+          `Company with id '${c.id}' has been updated since ${updatedSince}. Adding to filtered output. (updated_at: ${c.updated_at})`,
+        );
+        filteredCompanies.push(c);
+      } else {
+        this.logger.debug(
+          `Company with id '${c.id}' has not been updated since ${updatedSince}. (updated_at: ${c.updated_at})`,
+        );
+      }
+    });
+
+    this.logger.debug(
+      `Completed filtering ${companies.length} companies for updates since ${updatedSince}, yielded ${filteredCompanies.length} result(s).`,
+    );
+    return filteredCompanies;
   }
 
   private static isInAnySegment(

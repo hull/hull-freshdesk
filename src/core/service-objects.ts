@@ -115,6 +115,7 @@ export interface IncomingData<T, U> {
   attributes: U;
   properties?: IHullUserEventProps;
   context?: IHullUserEventContext;
+  eventName?: string;
 }
 
 export interface OutgoingOperationEnvelopesFiltered<T, U> {
@@ -184,3 +185,97 @@ export interface FreshdeskPagedResult<T> {
   results: T[];
   hasMore: boolean;
 }
+
+export enum FreshdeskTicketSource {
+  Email = 1,
+  Portal = 2,
+  Phone = 3,
+  Chat = 7,
+  Mobihelp = 8,
+  FeedbackWidget = 9,
+  OutboundEmail = 10,
+}
+
+export enum FreshdeskTicketStatus {
+  Open = 2,
+  Pending = 3,
+  Resolved = 4,
+  Closed = 5,
+}
+
+export enum FreshdeskTicketPriority {
+  Low = 1,
+  Medium = 2,
+  High = 3,
+  Urgent = 4,
+}
+
+export interface FreshdeskTicketIncludeRequester {
+  id: number;
+  name?: string | null;
+  email?: string | null;
+  mobile?: string | null;
+  phone?: string | null;
+}
+
+export interface FreshdeskTicketIncludeStats {
+  agent_responded_at?: string | null;
+  requester_responded_at?: string | null;
+  first_responded_at?: string | null;
+  status_updated_at?: string | null;
+  reopened_at?: string | null;
+  resolved_at?: string | null;
+  closed_at?: string | null;
+  pending_since?: string | null;
+}
+
+export interface FreshdeskTicketCreateOrUpdate {
+  name?: string | null;
+  requester_id?: number | null;
+  email?: string | null;
+  facebook_id?: string | null;
+  phone?: string | null;
+  twitter_id?: string | null;
+  unique_external_id?: string | null;
+  subject?: string | null;
+  type?: string | null;
+  status: FreshdeskTicketStatus;
+  priority: FreshdeskTicketPriority;
+  description?: string | null;
+  responder_id?: number | null;
+  attachments?: object[] | null;
+  cc_emails?: string[] | null;
+  custom_fields?: FreshdeskCustomFields | null;
+  due_by?: string | null;
+  email_config_id?: number | null;
+  fr_due_by?: string | null;
+  group_id?: number | null;
+  product_id?: number | null;
+  source: FreshdeskTicketSource;
+  tags?: string[] | null;
+  company_id?: number | null;
+}
+
+export interface FreshdeskTicket extends FreshdeskTicketCreateOrUpdate {
+  deleted?: boolean | null;
+  description_text?: string | null;
+  fr_escalated?: boolean | null;
+  fwd_emails?: string[] | null;
+  id: number;
+  is_escalated?: boolean | null;
+  reply_cc_emails?: string[] | null;
+  spam?: boolean | null;
+  to_emails?: string[] | null;
+  created_at: string;
+  updated_at: string;
+  requester?: FreshdeskTicketIncludeRequester | null;
+  stats?: FreshdeskTicketIncludeStats | null;
+}
+
+export type FreshdeskTicketListOrderBy =
+  | "created_at"
+  | "due_by"
+  | "updated_at"
+  | "status";
+export type FreshdeskTicketListOrderDir = "asc" | "desc";
+export type FreshdeskTicketListIncludes = "requester" | "stats" | "description";

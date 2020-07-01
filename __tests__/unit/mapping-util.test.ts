@@ -6,6 +6,9 @@ import {
   OutgoingOperationEnvelope,
   IncomingData,
   FreshdeskCompanyCreateOrUpdate,
+  FreshdeskTicketPriority,
+  FreshdeskTicketSource,
+  FreshdeskTicketStatus,
 } from "../../src/core/service-objects";
 import ApiResponseContactFields from "../_data/api__list_all_contact_fields.json";
 import _ from "lodash";
@@ -24,6 +27,7 @@ import {
   IHullAccountAttributes,
   IHullAccountClaims,
 } from "../../src/types/account";
+import ApiResponseListAllTickets from "../_data/api__list_all_tickets.json";
 
 describe("MappingUtil", () => {
   describe("constructor()", () => {
@@ -38,7 +42,13 @@ describe("MappingUtil", () => {
           account_attributes_inbound: [],
           account_filter_inbound_require_domain: false,
         },
-        logger: console,
+        logger: {
+          info: jest.fn(),
+          log: jest.fn(),
+          warn: jest.fn(),
+          debug: jest.fn(),
+          error: jest.fn(),
+        },
         contactFields: ApiResponseContactFields,
         companyFields: ApiResponseCompanyFields,
       };
@@ -69,7 +79,13 @@ describe("MappingUtil", () => {
           account_filter_inbound_require_domain: false,
           contact_lookup_attribute_email: "email",
         },
-        logger: console,
+        logger: {
+          info: jest.fn(),
+          log: jest.fn(),
+          warn: jest.fn(),
+          debug: jest.fn(),
+          error: jest.fn(),
+        },
         contactFields: ApiResponseContactFields,
         companyFields: ApiResponseCompanyFields,
       };
@@ -122,7 +138,13 @@ describe("MappingUtil", () => {
           account_filter_inbound_require_domain: false,
           contact_lookup_attribute_email: "email",
         },
-        logger: console,
+        logger: {
+          info: jest.fn(),
+          log: jest.fn(),
+          warn: jest.fn(),
+          debug: jest.fn(),
+          error: jest.fn(),
+        },
         contactFields: ApiResponseContactFields,
         companyFields: ApiResponseCompanyFields,
       };
@@ -174,7 +196,13 @@ describe("MappingUtil", () => {
           account_attributes_inbound: [],
           account_filter_inbound_require_domain: false,
         },
-        logger: console,
+        logger: {
+          info: jest.fn(),
+          log: jest.fn(),
+          warn: jest.fn(),
+          debug: jest.fn(),
+          error: jest.fn(),
+        },
         contactFields: ApiResponseContactFields,
         companyFields: ApiResponseCompanyFields,
       };
@@ -229,7 +257,13 @@ describe("MappingUtil", () => {
           account_attributes_inbound: [],
           account_filter_inbound_require_domain: false,
         },
-        logger: console,
+        logger: {
+          info: jest.fn(),
+          log: jest.fn(),
+          warn: jest.fn(),
+          debug: jest.fn(),
+          error: jest.fn(),
+        },
         contactFields: ApiResponseContactFields,
         companyFields: ApiResponseCompanyFields,
       };
@@ -287,7 +321,13 @@ describe("MappingUtil", () => {
           account_filter_inbound_require_domain: false,
           contact_lookup_attribute_email: "email",
         },
-        logger: console,
+        logger: {
+          info: jest.fn(),
+          log: jest.fn(),
+          warn: jest.fn(),
+          debug: jest.fn(),
+          error: jest.fn(),
+        },
         contactFields: ApiResponseContactFields,
         companyFields: ApiResponseCompanyFields,
       };
@@ -344,7 +384,13 @@ describe("MappingUtil", () => {
           account_filter_inbound_require_domain: false,
           contact_lookup_attribute_email: "email",
         },
-        logger: console,
+        logger: {
+          info: jest.fn(),
+          log: jest.fn(),
+          warn: jest.fn(),
+          debug: jest.fn(),
+          error: jest.fn(),
+        },
         contactFields: ApiResponseContactFields,
         companyFields: ApiResponseCompanyFields,
       };
@@ -398,7 +444,13 @@ describe("MappingUtil", () => {
           account_filter_inbound_require_domain: false,
           contact_lookup_attribute_email: "email",
         },
-        logger: console,
+        logger: {
+          info: jest.fn(),
+          log: jest.fn(),
+          warn: jest.fn(),
+          debug: jest.fn(),
+          error: jest.fn(),
+        },
         contactFields: ApiResponseContactFields,
         companyFields: ApiResponseCompanyFields,
       };
@@ -456,7 +508,13 @@ describe("MappingUtil", () => {
           account_filter_inbound_require_domain: false,
           contact_lookup_attribute_email: "email",
         },
-        logger: console,
+        logger: {
+          info: jest.fn(),
+          log: jest.fn(),
+          warn: jest.fn(),
+          debug: jest.fn(),
+          error: jest.fn(),
+        },
         contactFields: ApiResponseContactFields,
         companyFields: ApiResponseCompanyFields,
       };
@@ -540,7 +598,13 @@ describe("MappingUtil", () => {
           account_filter_inbound_require_domain: false,
           contact_lookup_attribute_email: "email",
         },
-        logger: console,
+        logger: {
+          info: jest.fn(),
+          log: jest.fn(),
+          warn: jest.fn(),
+          debug: jest.fn(),
+          error: jest.fn(),
+        },
         contactFields: ApiResponseContactFields,
         companyFields: ApiResponseCompanyFields,
       };
@@ -591,7 +655,13 @@ describe("MappingUtil", () => {
           account_filter_inbound_require_domain: false,
           contact_lookup_attribute_email: "email",
         },
-        logger: console,
+        logger: {
+          info: jest.fn(),
+          log: jest.fn(),
+          warn: jest.fn(),
+          debug: jest.fn(),
+          error: jest.fn(),
+        },
         contactFields: ApiResponseContactFields,
         companyFields: ApiResponseCompanyFields,
       };
@@ -651,7 +721,13 @@ describe("MappingUtil", () => {
           account_filter_inbound_require_domain: false,
           contact_lookup_attribute_email: "email",
         },
-        logger: console,
+        logger: {
+          info: jest.fn(),
+          log: jest.fn(),
+          warn: jest.fn(),
+          debug: jest.fn(),
+          error: jest.fn(),
+        },
         contactFields: ApiResponseContactFields,
         companyFields: ApiResponseCompanyFields,
       };
@@ -714,7 +790,13 @@ describe("MappingUtil", () => {
           account_filter_inbound_require_domain: false,
           contact_lookup_attribute_email: "email",
         },
-        logger: console,
+        logger: {
+          info: jest.fn(),
+          log: jest.fn(),
+          warn: jest.fn(),
+          debug: jest.fn(),
+          error: jest.fn(),
+        },
         contactFields: ApiResponseContactFields,
         companyFields: ApiResponseCompanyFields,
       };
@@ -770,7 +852,13 @@ describe("MappingUtil", () => {
           account_filter_inbound_require_domain: false,
           contact_lookup_attribute_email: "email",
         },
-        logger: console,
+        logger: {
+          info: jest.fn(),
+          log: jest.fn(),
+          warn: jest.fn(),
+          debug: jest.fn(),
+          error: jest.fn(),
+        },
         contactFields: ApiResponseContactFields,
         companyFields: ApiResponseCompanyFields,
       };
@@ -819,7 +907,13 @@ describe("MappingUtil", () => {
           contact_lookup_attribute_email: "email",
           account_lookup_attribute_domain: "domain",
         },
-        logger: console,
+        logger: {
+          info: jest.fn(),
+          log: jest.fn(),
+          warn: jest.fn(),
+          debug: jest.fn(),
+          error: jest.fn(),
+        },
         contactFields: ApiResponseContactFields,
         companyFields: ApiResponseCompanyFields,
       };
@@ -873,7 +967,13 @@ describe("MappingUtil", () => {
           contact_lookup_attribute_email: "email",
           account_lookup_attribute_domain: "domain",
         },
-        logger: console,
+        logger: {
+          info: jest.fn(),
+          log: jest.fn(),
+          warn: jest.fn(),
+          debug: jest.fn(),
+          error: jest.fn(),
+        },
         contactFields: ApiResponseContactFields,
         companyFields: ApiResponseCompanyFields,
       };
@@ -920,7 +1020,13 @@ describe("MappingUtil", () => {
           account_attributes_inbound: [],
           account_filter_inbound_require_domain: false,
         },
-        logger: console,
+        logger: {
+          info: jest.fn(),
+          log: jest.fn(),
+          warn: jest.fn(),
+          debug: jest.fn(),
+          error: jest.fn(),
+        },
         contactFields: ApiResponseContactFields,
         companyFields: ApiResponseCompanyFields,
       };
@@ -968,7 +1074,13 @@ describe("MappingUtil", () => {
           account_attributes_inbound: [],
           account_filter_inbound_require_domain: false,
         },
-        logger: console,
+        logger: {
+          info: jest.fn(),
+          log: jest.fn(),
+          warn: jest.fn(),
+          debug: jest.fn(),
+          error: jest.fn(),
+        },
         contactFields: ApiResponseContactFields,
         companyFields: ApiResponseCompanyFields,
       };
@@ -1024,7 +1136,13 @@ describe("MappingUtil", () => {
           contact_lookup_attribute_email: "email",
           account_lookup_attribute_domain: "domain",
         },
-        logger: console,
+        logger: {
+          info: jest.fn(),
+          log: jest.fn(),
+          warn: jest.fn(),
+          debug: jest.fn(),
+          error: jest.fn(),
+        },
         contactFields: ApiResponseContactFields,
         companyFields: ApiResponseCompanyFields,
       };
@@ -1081,7 +1199,13 @@ describe("MappingUtil", () => {
           contact_lookup_attribute_email: "email",
           account_lookup_attribute_domain: "domain",
         },
-        logger: console,
+        logger: {
+          info: jest.fn(),
+          log: jest.fn(),
+          warn: jest.fn(),
+          debug: jest.fn(),
+          error: jest.fn(),
+        },
         contactFields: ApiResponseContactFields,
         companyFields: ApiResponseCompanyFields,
       };
@@ -1136,7 +1260,13 @@ describe("MappingUtil", () => {
           contact_lookup_attribute_email: "email",
           account_lookup_attribute_domain: "domain",
         },
-        logger: console,
+        logger: {
+          info: jest.fn(),
+          log: jest.fn(),
+          warn: jest.fn(),
+          debug: jest.fn(),
+          error: jest.fn(),
+        },
         contactFields: ApiResponseContactFields,
         companyFields: ApiResponseCompanyFields,
       };
@@ -1184,7 +1314,13 @@ describe("MappingUtil", () => {
           contact_lookup_attribute_email: "email",
           account_lookup_attribute_domain: "domain",
         },
-        logger: console,
+        logger: {
+          info: jest.fn(),
+          log: jest.fn(),
+          warn: jest.fn(),
+          debug: jest.fn(),
+          error: jest.fn(),
+        },
         contactFields: ApiResponseContactFields,
         companyFields: ApiResponseCompanyFields,
       };
@@ -1228,7 +1364,13 @@ describe("MappingUtil", () => {
           contact_lookup_attribute_email: "email",
           account_lookup_attribute_domain: "domain",
         },
-        logger: console,
+        logger: {
+          info: jest.fn(),
+          log: jest.fn(),
+          warn: jest.fn(),
+          debug: jest.fn(),
+          error: jest.fn(),
+        },
         contactFields: ApiResponseContactFields,
         companyFields: ApiResponseCompanyFields,
       };
@@ -1290,7 +1432,13 @@ describe("MappingUtil", () => {
           account_filter_inbound_require_domain: false,
           contact_lookup_attribute_email: "email",
         },
-        logger: console,
+        logger: {
+          info: jest.fn(),
+          log: jest.fn(),
+          warn: jest.fn(),
+          debug: jest.fn(),
+          error: jest.fn(),
+        },
         contactFields: ApiResponseContactFields,
         companyFields: ApiResponseCompanyFields,
       };
@@ -1351,7 +1499,13 @@ describe("MappingUtil", () => {
           account_filter_inbound_require_domain: false,
           contact_lookup_attribute_email: "email",
         },
-        logger: console,
+        logger: {
+          info: jest.fn(),
+          log: jest.fn(),
+          warn: jest.fn(),
+          debug: jest.fn(),
+          error: jest.fn(),
+        },
         contactFields: ApiResponseContactFields,
         companyFields: ApiResponseCompanyFields,
       };
@@ -1419,7 +1573,13 @@ describe("MappingUtil", () => {
           account_filter_inbound_require_domain: false,
           contact_lookup_attribute_email: "email",
         },
-        logger: console,
+        logger: {
+          info: jest.fn(),
+          log: jest.fn(),
+          warn: jest.fn(),
+          debug: jest.fn(),
+          error: jest.fn(),
+        },
         contactFields: ApiResponseContactFields,
         companyFields: ApiResponseCompanyFields,
       };
@@ -1491,7 +1651,13 @@ describe("MappingUtil", () => {
           account_filter_inbound_require_domain: false,
           contact_lookup_attribute_email: "email",
         },
-        logger: console,
+        logger: {
+          info: jest.fn(),
+          log: jest.fn(),
+          warn: jest.fn(),
+          debug: jest.fn(),
+          error: jest.fn(),
+        },
         contactFields: ApiResponseContactFields,
         companyFields: ApiResponseCompanyFields,
       };
@@ -1557,7 +1723,13 @@ describe("MappingUtil", () => {
           account_filter_inbound_require_domain: false,
           contact_lookup_attribute_email: "email",
         },
-        logger: console,
+        logger: {
+          info: jest.fn(),
+          log: jest.fn(),
+          warn: jest.fn(),
+          debug: jest.fn(),
+          error: jest.fn(),
+        },
         contactFields: ApiResponseContactFields,
         companyFields: ApiResponseCompanyFields,
       };
@@ -1587,6 +1759,312 @@ describe("MappingUtil", () => {
         ApiCreateCompanyResponse,
       );
 
+      expect(actual).toEqual(expected);
+    });
+  });
+
+  describe("mapTicketToHullEvent()", () => {
+    it("should map a Freshdesk ticket without includes to a Hull event", () => {
+      const options = {
+        privateSettings: {
+          contact_synchronized_segments: [],
+          contact_attributes_outbound: [],
+          contact_attributes_inbound: [],
+          account_synchronized_segments: [],
+          account_attributes_outbound: [],
+          account_attributes_inbound: [
+            {
+              hull: "freshdesk/name",
+              service: "name",
+              overwrite: true,
+            },
+            {
+              hull: "freshdesk/domains",
+              service: "domains",
+              overwrite: true,
+            },
+            {
+              hull: "freshdesk/account_tier",
+              service: "account_tier",
+              overwrite: true,
+            },
+          ],
+          account_filter_inbound_require_domain: false,
+          contact_lookup_attribute_email: "email",
+        },
+        logger: {
+          info: jest.fn(),
+          log: jest.fn(),
+          warn: jest.fn(),
+          debug: jest.fn(),
+          error: jest.fn(),
+        },
+        contactFields: ApiResponseContactFields,
+        companyFields: ApiResponseCompanyFields,
+      };
+
+      const fdData = {
+        ...ApiResponseListAllTickets[0],
+      };
+
+      const expected: IncomingData<IHullAccountClaims, IHullUserAttributes> = {
+        objectType: "event",
+        ident: {
+          anonymous_id: `freshdesk:${fdData.requester_id}`,
+        },
+        attributes: {},
+        context: {
+          event_id: `fd-${fdData.id}-${fdData.updated_at}`,
+          ip: 0,
+          source: "freshdesk",
+        },
+        eventName: `Ticket ${
+          fdData.created_at === fdData.updated_at ? "created" : "updated"
+        }`,
+        properties: {
+          cc_emails: ["user@cc.com", "user2@cc.com"],
+          fwd_emails: [],
+          reply_cc_emails: ["user@cc.com", "user2@cc.com"],
+          fr_escalated: false,
+          spam: false,
+          email_config_id: null,
+          group_id: 2,
+          priority: 1,
+          priority_name: FreshdeskTicketPriority[1],
+          requester_id: 5,
+          responder_id: 1,
+          source: 2,
+          source_name: FreshdeskTicketSource[2],
+          status: 2,
+          status_name: FreshdeskTicketStatus[2],
+          subject: "Please help",
+          to_emails: null,
+          product_id: null,
+          id: 18,
+          type: "Lead",
+          created_at: "2015-08-17T12:02:50Z",
+          updated_at: "2015-08-17T12:02:51Z",
+          due_by: "2015-08-20T11:30:00Z",
+          fr_due_by: "2015-08-18T11:30:00Z",
+          is_escalated: false,
+          custom_fields__category: "Default",
+        },
+      };
+
+      const util = new MappingUtil(options);
+      const actual = util.mapTicketToHullEvent(fdData);
+      expect(actual).toEqual(expected);
+    });
+
+    it("should map a Freshdesk ticket with includes to a Hull event", () => {
+      const options = {
+        privateSettings: {
+          contact_synchronized_segments: [],
+          contact_attributes_outbound: [],
+          contact_attributes_inbound: [],
+          account_synchronized_segments: [],
+          account_attributes_outbound: [],
+          account_attributes_inbound: [
+            {
+              hull: "freshdesk/name",
+              service: "name",
+              overwrite: true,
+            },
+            {
+              hull: "freshdesk/domains",
+              service: "domains",
+              overwrite: true,
+            },
+            {
+              hull: "freshdesk/account_tier",
+              service: "account_tier",
+              overwrite: true,
+            },
+          ],
+          account_filter_inbound_require_domain: false,
+          contact_lookup_attribute_email: "email",
+        },
+        logger: {
+          info: jest.fn(),
+          log: jest.fn(),
+          warn: jest.fn(),
+          debug: jest.fn(),
+          error: jest.fn(),
+        },
+        contactFields: ApiResponseContactFields,
+        companyFields: ApiResponseCompanyFields,
+      };
+
+      const fdData = {
+        ...ApiResponseListAllTickets[0],
+        requester_id: 77024965158,
+        requester: {
+          id: 77024965158,
+          name: "Matt Rogers",
+          email: "matt.rogers@freshdesk.com",
+          mobile: null,
+          phone: null,
+        },
+        updated_at: "2020-06-18T07:08:04Z",
+        stats: {
+          agent_responded_at: "2020-06-18T07:08:04Z",
+          requester_responded_at: null,
+          first_responded_at: "2020-06-18T07:08:04Z",
+          status_updated_at: "2020-06-18T07:08:04Z",
+          reopened_at: null,
+          resolved_at: null,
+          closed_at: null,
+          pending_since: null,
+        },
+      };
+
+      const expected: IncomingData<IHullUserClaims, IHullUserAttributes> = {
+        objectType: "event",
+        ident: {
+          anonymous_id: `freshdesk:${fdData.requester_id}`,
+          email: fdData.requester.email,
+        },
+        attributes: {},
+        context: {
+          event_id: `fd-${fdData.id}-${fdData.updated_at}`,
+          ip: 0,
+          source: "freshdesk",
+        },
+        eventName: `Ticket ${
+          fdData.created_at === fdData.updated_at ? "created" : "updated"
+        }`,
+        properties: {
+          cc_emails: ["user@cc.com", "user2@cc.com"],
+          fwd_emails: [],
+          reply_cc_emails: ["user@cc.com", "user2@cc.com"],
+          fr_escalated: false,
+          spam: false,
+          email_config_id: null,
+          group_id: 2,
+          priority: 1,
+          priority_name: FreshdeskTicketPriority[1],
+          requester_id: fdData.requester_id,
+          responder_id: 1,
+          source: 2,
+          source_name: FreshdeskTicketSource[2],
+          status: 2,
+          status_name: FreshdeskTicketStatus[2],
+          subject: "Please help",
+          to_emails: null,
+          product_id: null,
+          id: 18,
+          type: "Lead",
+          created_at: "2015-08-17T12:02:50Z",
+          updated_at: fdData.updated_at,
+          due_by: "2015-08-20T11:30:00Z",
+          fr_due_by: "2015-08-18T11:30:00Z",
+          is_escalated: false,
+          custom_fields__category: "Default",
+          stats__agent_responded_at: "2020-06-18T07:08:04Z",
+          stats__requester_responded_at: null,
+          stats__first_responded_at: "2020-06-18T07:08:04Z",
+          stats__status_updated_at: "2020-06-18T07:08:04Z",
+          stats__reopened_at: null,
+          stats__resolved_at: null,
+          stats__closed_at: null,
+          stats__pending_since: null,
+        },
+      };
+
+      const util = new MappingUtil(options);
+      const actual = util.mapTicketToHullEvent(fdData);
+      expect(actual).toEqual(expected);
+    });
+
+    it("should map a Freshdesk ticket without includes and requester_id to a Hull event", () => {
+      const options = {
+        privateSettings: {
+          contact_synchronized_segments: [],
+          contact_attributes_outbound: [],
+          contact_attributes_inbound: [],
+          account_synchronized_segments: [],
+          account_attributes_outbound: [],
+          account_attributes_inbound: [
+            {
+              hull: "freshdesk/name",
+              service: "name",
+              overwrite: true,
+            },
+            {
+              hull: "freshdesk/domains",
+              service: "domains",
+              overwrite: true,
+            },
+            {
+              hull: "freshdesk/account_tier",
+              service: "account_tier",
+              overwrite: true,
+            },
+          ],
+          account_filter_inbound_require_domain: false,
+          contact_lookup_attribute_email: "email",
+        },
+        logger: {
+          info: jest.fn(),
+          log: jest.fn(),
+          warn: jest.fn(),
+          debug: jest.fn(),
+          error: jest.fn(),
+        },
+        contactFields: ApiResponseContactFields,
+        companyFields: ApiResponseCompanyFields,
+      };
+
+      const fdData = {
+        ...ApiResponseListAllTickets[0],
+        requester_id: null,
+        updated_at: ApiResponseListAllTickets[0].created_at,
+      };
+
+      const expected: IncomingData<IHullAccountClaims, IHullUserAttributes> = {
+        objectType: "event",
+        ident: {},
+        attributes: {},
+        context: {
+          event_id: `fd-${fdData.id}-${fdData.updated_at}`,
+          ip: 0,
+          source: "freshdesk",
+        },
+        eventName: `Ticket ${
+          fdData.created_at === fdData.updated_at ? "created" : "updated"
+        }`,
+        properties: {
+          cc_emails: ["user@cc.com", "user2@cc.com"],
+          fwd_emails: [],
+          reply_cc_emails: ["user@cc.com", "user2@cc.com"],
+          fr_escalated: false,
+          spam: false,
+          email_config_id: null,
+          group_id: 2,
+          priority: 1,
+          priority_name: FreshdeskTicketPriority[1],
+          requester_id: null,
+          responder_id: 1,
+          source: 2,
+          source_name: FreshdeskTicketSource[2],
+          status: 2,
+          status_name: FreshdeskTicketStatus[2],
+          subject: "Please help",
+          to_emails: null,
+          product_id: null,
+          id: 18,
+          type: "Lead",
+          created_at: "2015-08-17T12:02:50Z",
+          updated_at: ApiResponseListAllTickets[0].created_at,
+          due_by: "2015-08-20T11:30:00Z",
+          fr_due_by: "2015-08-18T11:30:00Z",
+          is_escalated: false,
+          custom_fields__category: "Default",
+        },
+      };
+
+      const util = new MappingUtil(options);
+      const actual = util.mapTicketToHullEvent(fdData);
       expect(actual).toEqual(expected);
     });
   });

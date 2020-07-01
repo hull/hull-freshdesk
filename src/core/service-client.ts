@@ -3,6 +3,10 @@ import {
   ApiResultObject,
   ApiMethod,
   FreshdeskPagedResult,
+  FreshdeskTicketListOrderBy,
+  FreshdeskTicketListOrderDir,
+  FreshdeskTicketListIncludes,
+  FreshdeskTicket,
 } from "../core/service-objects";
 import { ApiUtil } from "../utils/api-util";
 import {
@@ -321,6 +325,50 @@ export class ServiceClient {
       );
 
       const pagedResult: FreshdeskPagedResult<FreshdeskCompany> = {
+        results: axiosResponse.data,
+        page,
+        perPage,
+        hasMore: axiosResponse.headers.link !== undefined,
+      };
+
+      return ApiUtil.handleApiResultSuccess(url, method, undefined, {
+        ...axiosResponse,
+        data: pagedResult,
+      });
+    } catch (error) {
+      return ApiUtil.handleApiResultError(url, method, undefined, error);
+    }
+  }
+
+  public async listTickets(
+    page: number,
+    perPage: number,
+    orderBy: FreshdeskTicketListOrderBy,
+    orderDirection: FreshdeskTicketListOrderDir,
+    includes: FreshdeskTicketListIncludes[],
+    updatedSince?: string,
+  ): Promise<
+    ApiResultObject<unknown, FreshdeskPagedResult<FreshdeskTicket> | undefined>
+  > {
+    let url = `${this.apiBaseUrl}/api/v2/tickets?page=${page}&per_page=${perPage}&order_by=${orderBy}&order_type=${orderDirection}`;
+    if (includes.length !== 0) {
+      url += `&include=${includes.join(",")}`;
+    }
+
+    if (updatedSince) {
+      url += `&updated_since=${updatedSince}`;
+    }
+
+    const method: ApiMethod = "query";
+    const axiosConfig = this.getAxiosConfig();
+
+    try {
+      const axiosResponse = await axios.get<Array<FreshdeskTicket>>(
+        url,
+        axiosConfig,
+      );
+
+      const pagedResult: FreshdeskPagedResult<FreshdeskTicket> = {
         results: axiosResponse.data,
         page,
         perPage,

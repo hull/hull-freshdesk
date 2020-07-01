@@ -4,6 +4,7 @@ import ApiResponseListAllContactFields from "../_data/api__list_all_contact_fiel
 import {
   ApiResultObject,
   FreshdeskPagedResult,
+  FreshdeskTicket,
 } from "../../src/core/service-objects";
 import {
   FreshdeskContactField,
@@ -15,7 +16,12 @@ import {
   FreshdeskCompany,
   FreshdeskAgent,
 } from "../../src/core/service-objects";
-import { API_BASE_URL, API_KEY, API_DOMAIN } from "../_helpers/constants";
+import {
+  API_BASE_URL,
+  API_KEY,
+  API_DOMAIN,
+  API_UPDATEDSINCE,
+} from "../_helpers/constants";
 import ApiResponseListAllCompanyFields from "../_data/api__list_all_company_fields.json";
 import ApiResponseCreateContact from "../_data/api__create_contact.json";
 import ApiResponseUpdateContact from "../_data/api__update_contact.json";
@@ -26,6 +32,7 @@ import ApiResponseFilterCompanies from "../_data/api__filter_companies.json";
 import ApiResponseCurrentlyAuthenticatedAgent from "../_data/api_me.json";
 import ApiResponseListAllContacts from "../_data/api__list_all_contacts.json";
 import ApiResponseListAllCompanies from "../_data/api__list_all_companies.json";
+import ApiResponseListAllTickets from "../_data/api__list_all_tickets.json";
 
 describe("ServiceClient", () => {
   beforeEach(() => {
@@ -948,6 +955,198 @@ describe("ServiceClient", () => {
       > = {
         data: undefined,
         endpoint: `${API_BASE_URL}/api/v2/companies?page=${page}&per_page=${perPage}`,
+        method: "query",
+        record: undefined,
+        success: false,
+        error: ["Some arbitrary error"],
+      };
+
+      expect(actual).toEqual(expected);
+    });
+  });
+
+  describe("listTickets()", () => {
+    it("should list all tickets without any includes or time restriction with no next page", async () => {
+      const page = 1;
+      const perPage = 10;
+      const orderBy = "updated_at";
+      const orderDir = "desc";
+      nock(API_BASE_URL)
+        .get(
+          `/api/v2/tickets?page=${page}&per_page=${perPage}&order_by=${orderBy}&order_type=${orderDir}`,
+        )
+        .matchHeader(
+          "authorization",
+          `Basic ${Buffer.from(`${API_KEY}:X`, "utf-8").toString("base64")}`,
+        )
+        .reply(200, ApiResponseListAllTickets, {
+          "Content-Type": "application/json",
+        });
+
+      const client = new ServiceClient({
+        apiKey: API_KEY,
+        domain: API_DOMAIN,
+        logger: console,
+      });
+      const actual = await client.listTickets(
+        page,
+        perPage,
+        orderBy,
+        orderDir,
+        [],
+      );
+      const expected: ApiResultObject<
+        unknown,
+        FreshdeskPagedResult<FreshdeskTicket> | undefined
+      > = {
+        data: {
+          results: ApiResponseListAllTickets,
+          page,
+          perPage,
+          hasMore: false,
+        },
+        endpoint: `${API_BASE_URL}/api/v2/tickets?page=${page}&per_page=${perPage}&order_by=${orderBy}&order_type=${orderDir}`,
+        method: "query",
+        record: undefined,
+        success: true,
+      };
+
+      expect(actual).toEqual(expected);
+    });
+
+    it("should list all tickets with a single include and no time restriction with no next page", async () => {
+      const page = 1;
+      const perPage = 10;
+      const orderBy = "updated_at";
+      const orderDir = "desc";
+      nock(API_BASE_URL)
+        .get(
+          `/api/v2/tickets?page=${page}&per_page=${perPage}&order_by=${orderBy}&order_type=${orderDir}&include=description`,
+        )
+        .matchHeader(
+          "authorization",
+          `Basic ${Buffer.from(`${API_KEY}:X`, "utf-8").toString("base64")}`,
+        )
+        .reply(200, ApiResponseListAllTickets, {
+          "Content-Type": "application/json",
+        });
+
+      const client = new ServiceClient({
+        apiKey: API_KEY,
+        domain: API_DOMAIN,
+        logger: console,
+      });
+      const actual = await client.listTickets(
+        page,
+        perPage,
+        orderBy,
+        orderDir,
+        ["description"],
+      );
+      const expected: ApiResultObject<
+        unknown,
+        FreshdeskPagedResult<FreshdeskTicket> | undefined
+      > = {
+        data: {
+          results: ApiResponseListAllTickets,
+          page,
+          perPage,
+          hasMore: false,
+        },
+        endpoint: `${API_BASE_URL}/api/v2/tickets?page=${page}&per_page=${perPage}&order_by=${orderBy}&order_type=${orderDir}&include=description`,
+        method: "query",
+        record: undefined,
+        success: true,
+      };
+
+      expect(actual).toEqual(expected);
+    });
+
+    it("should list all tickets with multiple includes and time restriction with next page", async () => {
+      const page = 1;
+      const perPage = 10;
+      const orderBy = "updated_at";
+      const orderDir = "desc";
+      nock(API_BASE_URL)
+        .get(
+          `/api/v2/tickets?page=${page}&per_page=${perPage}&order_by=${orderBy}&order_type=${orderDir}&include=description,stats&updated_since=${API_UPDATEDSINCE}`,
+        )
+        .matchHeader(
+          "authorization",
+          `Basic ${Buffer.from(`${API_KEY}:X`, "utf-8").toString("base64")}`,
+        )
+        .reply(200, ApiResponseListAllTickets, {
+          "Content-Type": "application/json",
+          link: `<${API_BASE_URL}/api/v2/tickets?page=${
+            page + 1
+          }&per_page=${perPage}&order_by=${orderBy}&order_type=${orderDir}&include=description,stats&updated_since=${API_UPDATEDSINCE}>;rel="next"`,
+        });
+
+      const client = new ServiceClient({
+        apiKey: API_KEY,
+        domain: API_DOMAIN,
+        logger: console,
+      });
+      const actual = await client.listTickets(
+        page,
+        perPage,
+        orderBy,
+        orderDir,
+        ["description", "stats"],
+        API_UPDATEDSINCE,
+      );
+      const expected: ApiResultObject<
+        unknown,
+        FreshdeskPagedResult<FreshdeskTicket> | undefined
+      > = {
+        data: {
+          results: ApiResponseListAllTickets,
+          page,
+          perPage,
+          hasMore: true,
+        },
+        endpoint: `${API_BASE_URL}/api/v2/tickets?page=${page}&per_page=${perPage}&order_by=${orderBy}&order_type=${orderDir}&include=description,stats&updated_since=${API_UPDATEDSINCE}`,
+        method: "query",
+        record: undefined,
+        success: true,
+      };
+
+      expect(actual).toEqual(expected);
+    });
+
+    it("should return an error result and not throw if API responds with status 500", async () => {
+      const page = 1;
+      const perPage = 10;
+      const orderBy = "updated_at";
+      const orderDir = "desc";
+      nock(API_BASE_URL)
+        .get(
+          `/api/v2/tickets?page=${page}&per_page=${perPage}&order_by=${orderBy}&order_type=${orderDir}`,
+        )
+        .matchHeader(
+          "authorization",
+          `Basic ${Buffer.from(`${API_KEY}:X`, "utf-8").toString("base64")}`,
+        )
+        .replyWithError("Some arbitrary error");
+
+      const client = new ServiceClient({
+        apiKey: API_KEY,
+        domain: API_DOMAIN,
+        logger: console,
+      });
+      const actual = await client.listTickets(
+        page,
+        perPage,
+        orderBy,
+        orderDir,
+        [],
+      );
+      const expected: ApiResultObject<
+        unknown,
+        FreshdeskPagedResult<FreshdeskTicket> | undefined
+      > = {
+        data: undefined,
+        endpoint: `${API_BASE_URL}/api/v2/tickets?page=${page}&per_page=${perPage}&order_by=${orderBy}&order_type=${orderDir}`,
         method: "query",
         record: undefined,
         success: false,

@@ -770,19 +770,4 @@ describe("SyncAgent", () => {
       expect(actual).toEqual(expected);
     });
   });
-
-  describe("fetchContacts()", () => {
-    it("should return true", async () => {
-      const agent = new SyncAgent(
-        ctxMock.client,
-        ctxMock.connector,
-        ctxMock.metric,
-        container,
-      );
-
-      const actual = await agent.fetchContacts();
-
-      expect(actual).toBeTruthy();
-    });
-  });
 });
