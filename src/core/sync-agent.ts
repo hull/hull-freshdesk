@@ -66,10 +66,7 @@ export class SyncAgent {
     this.diContainer.register("privateSettings", asValue(this.privateSettings));
     this.diContainer.register("apiKey", asValue(this.privateSettings.api_key));
     this.diContainer.register("domain", asValue(this.privateSettings.domain));
-    this.diContainer.register(
-      "serviceClient",
-      asClass(ServiceClient, { lifetime: Lifetime.SINGLETON }),
-    );
+    this.diContainer.register("serviceClient", asClass(ServiceClient));
     this.diContainer.register("filterUtil", asClass(FilterUtil));
     this.diContainer.register("validationUtil", asClass(ValidationUtil));
   }
