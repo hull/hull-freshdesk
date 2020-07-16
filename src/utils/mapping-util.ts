@@ -158,6 +158,10 @@ export class MappingUtil {
       _.set(hullData.attributes, "freshdesk/email", data.email);
     }
 
+    if (data.company_id !== undefined && data.company_id !== null) {
+      _.set(hullData.attributes, "freshdesk/company_id", data.company_id);
+    }
+
     hullData.ident.anonymous_id = `freshdesk:${data.id}`;
     _.set(hullData.attributes, "freshdesk/id", {
       value: data.id,
