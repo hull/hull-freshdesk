@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.1.1
+
+- [Feature] Fetch Company ID for Contacts into Hull
+
 ## v0.1.0
 
 - [Maintenance] General Project Structure
