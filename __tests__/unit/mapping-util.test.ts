@@ -623,6 +623,7 @@ describe("MappingUtil", () => {
           "freshdesk/email": ApiCreateContactResponse.email,
           "freshdesk/name": ApiCreateContactResponse.name,
           "freshdesk/job_title": ApiCreateContactResponse.job_title,
+          "freshdesk/company_id": ApiCreateContactResponse.company_id,
         },
       };
 
@@ -678,6 +679,7 @@ describe("MappingUtil", () => {
           },
           "freshdesk/name": ApiCreateContactResponse.name,
           "freshdesk/job_title": ApiCreateContactResponse.job_title,
+          "freshdesk/company_id": ApiCreateContactResponse.company_id,
         },
       };
 
@@ -755,6 +757,7 @@ describe("MappingUtil", () => {
       };
 
       _.set(freshdeskData, "custom_fields.permanent", false);
+      _.set(freshdeskData, "company_id", null);
 
       const util = new MappingUtil(options);
       const actual = util.mapServiceObjectToHullUser(freshdeskData);
@@ -815,6 +818,7 @@ describe("MappingUtil", () => {
           "freshdesk/email": ApiCreateContactResponse.email,
           "freshdesk/name": ApiCreateContactResponse.name,
           "freshdesk/job_title": ApiCreateContactResponse.job_title,
+          "freshdesk/company_id": ApiCreateContactResponse.company_id,
         },
       };
 
@@ -877,6 +881,7 @@ describe("MappingUtil", () => {
           "freshdesk/email": ApiCreateContactResponse.email,
           "freshdesk/name": ApiCreateContactResponse.name,
           "freshdesk/job_title": ApiCreateContactResponse.job_title,
+          "freshdesk/company_id": ApiCreateContactResponse.company_id,
         },
       };
 
