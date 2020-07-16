@@ -10,7 +10,7 @@
   "description": "Synchronize Contacts and Accounts with Freshdesk and Fetch Tickets",
   "readme": "readme.md",
   "tabs": [],
-  "version": "0.1.0",
+  "version": "0.1.1",
   "source": "freshdesk",
   "logo": "logo.png",
   "picture": "picture.png",
