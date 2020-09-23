@@ -92,7 +92,10 @@ export class SyncAgent {
 
     const filterUtil = this.diContainer.resolve<FilterUtil>("filterUtil");
 
-    let envelopesFiltered = filterUtil.filterUserMessagesInitial(messages);
+    let envelopesFiltered = filterUtil.filterUserMessagesInitial(
+      messages,
+      isBatch,
+    );
     envelopesFiltered.skips.forEach((envelope) => {
       this.hullClient
         .asUser(envelope.message.user)
@@ -276,7 +279,10 @@ export class SyncAgent {
 
     const filterUtil = this.diContainer.resolve<FilterUtil>("filterUtil");
 
-    let envelopesFiltered = filterUtil.filterAccountMessagesInitial(messages);
+    let envelopesFiltered = filterUtil.filterAccountMessagesInitial(
+      messages,
+      isBatch,
+    );
     envelopesFiltered.skips.forEach((envelope) => {
       this.hullClient
         .asAccount(envelope.message.account)
