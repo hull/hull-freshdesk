@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.1.2
+
+- [Hotfix] Better error logging
+- [Feature] Kraken filtering
+- [Maintenance] Code clean up
+
 ## v0.1.1
 
 - [Feature] Fetch Company ID for Contacts into Hull
