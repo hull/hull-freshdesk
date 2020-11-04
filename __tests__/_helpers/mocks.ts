@@ -14,19 +14,13 @@ const ClientMock: any = jest.fn<IHullClient, []>(() => ({
   del: jest.fn(() => Promise.resolve()),
   get: jest.fn(() => Promise.resolve()),
   logger: {
-    info: jest.fn((msg, data) => console.log(msg, data)),
-
-    debug: jest.fn((msg, data) => console.log(msg, data)),
-
-    error: jest.fn((msg, data) => console.log(msg, data)),
-
-    warn: jest.fn((msg, data) => console.log(msg, data)),
-
-    log: jest.fn((msg, data) => console.log(msg, data)),
-
-    silly: jest.fn((msg, data) => console.log(msg, data)),
-
-    verbose: jest.fn((msg, data) => console.log(msg, data)),
+    info: jest.fn(),
+    debug: jest.fn(),
+    error: jest.fn(),
+    warn: jest.fn(),
+    log: jest.fn(),
+    silly: jest.fn(),
+    verbose: jest.fn(),
   },
   post: jest.fn(() => Promise.resolve()),
   put: jest.fn(() => Promise.resolve()),

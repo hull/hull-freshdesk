@@ -91,7 +91,6 @@ export class SyncAgent {
     }
 
     const filterUtil = this.diContainer.resolve<FilterUtil>("filterUtil");
-
     let envelopesFiltered = filterUtil.filterUserMessagesInitial(
       messages,
       isBatch,
@@ -177,7 +176,6 @@ export class SyncAgent {
         envelopesFiltered,
         queriedServiceObjects,
       );
-
       // Perform the inserts
       await asyncForEach(
         envelopesFiltered.inserts,
@@ -209,6 +207,17 @@ export class SyncAgent {
                   operation: op.operation,
                   details: op.notes,
                 });
+            } else {
+              console.error(createResult.errorDetails);
+              const userIdent = {
+                id: op.message.user.id,
+                email: op.message.user.email,
+              };
+              this.hullClient
+                .asUser(userIdent)
+                .logger.error("outgoing.user.error", {
+                  error: createResult.errorDetails,
+                });
             }
           }
         },
@@ -230,13 +239,13 @@ export class SyncAgent {
         >,
       ) => {
         if (op.serviceObject !== undefined && op.serviceId !== undefined) {
-          const createResult = await serviceClient.updateContact(
+          const updateResult = await serviceClient.updateContact(
             op.serviceId,
             op.serviceObject,
           );
-          if (createResult.success && createResult.data !== undefined) {
+          if (updateResult.success && updateResult.data !== undefined) {
             const hullInfo = mappingUtil.mapServiceObjectToHullUser(
-              createResult.data,
+              updateResult.data,
             );
             const userIdent = {
               ...hullInfo.ident,
@@ -249,6 +258,17 @@ export class SyncAgent {
                 data: op.serviceObject,
                 operation: op.operation,
                 details: op.notes,
+              });
+          } else {
+            console.error(updateResult.errorDetails);
+            const userIdent = {
+              id: op.message.user.id,
+              email: op.message.user.email,
+            };
+            this.hullClient
+              .asUser(userIdent)
+              .logger.error("outgoing.user.error", {
+                error: updateResult.errorDetails,
               });
           }
         }
@@ -401,6 +421,17 @@ export class SyncAgent {
                   operation: op.operation,
                   details: op.notes,
                 });
+            } else {
+              console.error(createResult.errorDetails);
+              const accountIdent = {
+                id: op.message.account.id,
+                domain: op.message.account.domain,
+              };
+              this.hullClient
+                .asAccount(accountIdent)
+                .logger.error("outgoing.account.error", {
+                  error: createResult.errorDetails,
+                });
             }
           }
         },
@@ -443,6 +474,17 @@ export class SyncAgent {
                 data: op.serviceObject,
                 operation: op.operation,
                 details: op.notes,
+              });
+          } else {
+            console.error(updateResult.errorDetails);
+            const accountIdent = {
+              id: op.message.account.id,
+              domain: op.message.account.domain,
+            };
+            this.hullClient
+              .asAccount(accountIdent)
+              .logger.error("outgoing.account.error", {
+                error: updateResult.errorDetails,
               });
           }
         }
@@ -902,7 +944,7 @@ export class SyncAgent {
           hasMore = apiData.hasMore;
           await asyncForEach(apiData.results, async (r: FreshdeskTicket) => {
             const hullInfo = mappingUtil.mapTicketToHullEvent(r);
-            console.log(">>> Hull INFO", hullInfo);
+
             if (
               !_.isNil(hullInfo.eventName) &&
               !_.isNil(hullInfo.properties) &&
