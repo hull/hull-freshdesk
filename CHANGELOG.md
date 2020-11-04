@@ -3,6 +3,7 @@
 ## v0.1.1
 
 - [Feature] Fetch Company ID for Contacts into Hull
+- [Hotfix] Enable batch handling
 
 ## v0.1.0
 

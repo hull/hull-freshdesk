@@ -194,7 +194,27 @@
     }
   ],
   "subscriptions": [{
-    "url": "/smart-notifier"
+    "url": "/smart-notifier",
+    "conditions": {
+      "channels": {
+        "only": ["user:update", "account:update"]
+      },
+      "segments": {
+        "account:update": [
+          "private_settings.account_synchronized_segments"
+        ],
+        "user:update": [
+          "private_settings.user_synchronized_segments"
+        ]
+      }
+    },
+    "channels": [{
+      "channel": "account:update",
+      "handler": "account_update"
+    }, {
+      "channel": "user:update",
+      "handler": "user_update"
+    }]
   }],
   "settings_sections": [{
       "title": "Freshdesk Credentials",

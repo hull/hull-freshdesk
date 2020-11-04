@@ -25,6 +25,7 @@ export class FilterUtil {
 
   public filterUserMessagesInitial(
     messages: IHullUserUpdateMessage[],
+    isBatch: boolean = false,
   ): OutgoingOperationEnvelopesFiltered<
     IHullUserUpdateMessage,
     FreshdeskContactCreateUpdate
@@ -43,7 +44,8 @@ export class FilterUtil {
         !FilterUtil.isInAnySegment(
           msg.segments,
           this.privateSettings.contact_synchronized_segments,
-        )
+        ) &&
+        !isBatch
       ) {
         result.skips.push({
           message: msg,
@@ -71,6 +73,7 @@ export class FilterUtil {
 
   public filterAccountMessagesInitial(
     messages: IHullAccountUpdateMessage[],
+    isBatch: boolean = false,
   ): OutgoingOperationEnvelopesFiltered<
     IHullAccountUpdateMessage,
     FreshdeskCompanyCreateOrUpdate
@@ -89,7 +92,8 @@ export class FilterUtil {
         !FilterUtil.isInAnySegment(
           msg.account_segments,
           this.privateSettings.account_synchronized_segments,
-        )
+        ) &&
+        !isBatch
       ) {
         result.skips.push({
           message: msg,
