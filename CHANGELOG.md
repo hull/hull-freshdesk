@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.1.3
+
+- [Feature] Enable user and account linking in Freshdesk
+
 ## v0.1.2
 
 - [Hotfix] Better error logging
