@@ -115,6 +115,14 @@ export class MappingUtil {
       }
     }
 
+    if (_.get(hullObject, "account.freshdesk.id", null) !== null) {
+      _.set(
+        serviceObject,
+        "company_id",
+        _.get(hullObject, "account.freshdesk.id", null),
+      );
+    }
+
     _.set(result, "serviceObject", serviceObject);
 
     return result;
