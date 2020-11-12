@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.1.4
+
+- [Hotfix] Change user and account linking attribute to proper account attribute
+
 ## v0.1.3
 
 - [Feature] Enable user and account linking in Freshdesk
