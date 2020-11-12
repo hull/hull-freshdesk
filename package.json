@@ -1,6 +1,6 @@
 {
   "name": "hull-freshdesk",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Hull Connector for Freshdesk",
   "main": "src/index.ts",
   "scripts": {
