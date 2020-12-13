@@ -24,7 +24,8 @@
     "lint-markdown": "markdownlint --ignore coverage --ignore dist --ignore node_modules '**/*.md' '.**/**/*.md'",
     "ngrok": "ngrok http 8095 --subdomain=hull-freshdesk",
     "ngrokfree": "ngrok http 8095",
-    "start": "pm2-runtime start ecosystem.config.js",
+    "postinstall": "npm run build",
+    "start": "node dist/index.js",
     "start--dev": "NODE_ENV=development npm run start",
     "start--dev--watch": "NODE_ENV=development npm run start-src--watch",
     "start-src": "babel-node --extensions .js,.jsx,.ts,.tsx --require ./node_modules/dotenv/config ./src/index.ts",
@@ -37,7 +38,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/SMK1085/hull-freshdesk.git"
+    "url": "git+https://github.com/hull/hull-freshdesk.git"
   },
   "keywords": [
     "hull",
@@ -48,13 +49,13 @@
   ],
   "author": {
     "name": "Sven Maschek",
-    "url": "https://www.github.com/SMK1085"
+    "url": "https://www.github.com/hull"
   },
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/SMK1085/hull-freshdesk/issues"
+    "url": "https://github.com/hull/hull-freshdesk/issues"
   },
-  "homepage": "https://github.com/SMK1085/hull-freshdesk#readme",
+  "homepage": "https://github.com/hull/hull-freshdesk#readme",
   "dependencies": {
     "awilix": "^4.2.6",
     "cors": "^2.8.5",
@@ -63,9 +64,9 @@
     "hull": "^0.13.20",
     "lodash": "^4.17.15",
     "luxon": "^1.24.1",
-    "pm2": "^4.4.0",
     "redis": "^3.0.2",
-    "winston": "^3.2.1"
+    "winston": "^3.2.1",
+    "axios": "^0.21.0"
   },
   "devDependencies": {
     "@babel/cli": "^7.8.4",

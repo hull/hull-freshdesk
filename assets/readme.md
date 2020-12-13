@@ -2,7 +2,7 @@
 
 This Connector enables you to synchronize Hull users and accounts to Freshdesk contacts and companies and also allows you to track tickets in Hull as User events.
 
-This document was last updated on July 1, 2020. If you want to help us improve this documentation or have some feedback, please feel free to [open a GitHub issue](https://github.com/SMK1085/hull-freshdesk/issues/new)!
+This document was last updated on July 1, 2020. If you want to help us improve this documentation or have some feedback, please feel free to [open a GitHub issue](https://github.com/hull/hull-freshdesk/issues/new)!
 
 ## Getting Started
 
@@ -80,4 +80,4 @@ The Freshdesk API allows only a daily granularity when querying for Companies wh
 
 ### Where can I find the changelog for the Connector
 
-You can find the changelog on GitHub detailing what features have been added, what bugfixes have been applied and what technical maintenance measures have been taken: [Changelog](https://github.com/SMK1085/hull-freshdesk/blob/master/CHANGELOG.md).
+You can find the changelog on GitHub detailing what features have been added, what bugfixes have been applied and what technical maintenance measures have been taken: [Changelog](https://github.com/hull/hull-freshdesk/blob/master/CHANGELOG.md).
