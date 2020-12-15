@@ -204,7 +204,7 @@
           "private_settings.account_synchronized_segments"
         ],
         "user:update": [
-          "private_settings.user_synchronized_segments"
+          "private_settings.contact_synchronized_segments"
         ]
       }
     },
